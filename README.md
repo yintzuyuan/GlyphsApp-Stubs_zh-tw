@@ -3,6 +3,8 @@
 這是字型設計軟體 [Glyphs](https://glyphsapp.com/) 工具程式撰寫相關的專案。
 前陣子看到 [官網論壇](https://forum.glyphsapp.com/t/glyphs-python-interpreter/25481) 有人在討論在 VisualStudio Code（以下簡稱 VSCode）撰寫程式碼時，透過 .pyi 格式能產生懸浮視窗說明文字的效果。剛好自己也有這方面的需求，就想到將 [官方的 Python API 架構文件](https://docu.glyphsapp.com/) 翻譯成中文，並將它搬到 .pyi 檔案中。
 
+<img width="1140" alt="image" src="https://github.com/yintzuyuan/GlyphsApp-Stubs_zh-tw/assets/83154914/5a5b9e8d-65ad-431b-b785-3cde8974e44a">
+
 # 安裝方式
 
 .pyi 檔案能支援大部分程式撰寫工具使用，每款安裝方法可能不同，這裡以 VSCode 舉例：
