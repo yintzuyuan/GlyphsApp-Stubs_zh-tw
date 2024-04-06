@@ -11,10 +11,16 @@
 
 .pyi 檔案能支援大部分程式撰寫工具使用，每款安裝方法可能不同，這裡以 VSCode 舉例：
 1. 在 VSCode 的延伸模組區安裝 Pylance。
-2. 下載本專案資料夾的 .pyi 檔（可改名或放在其他資料夾）
-3. 在 VSCode 中按`shift+cmd+P`搜尋`setting json`找到使用者設定的JSON檔。
-4. 將以下程式碼加入JSON文件 `"python.analysis.stubPath": "pyi放的路徑位置",` 
-5. 在你正在撰寫的腳本中加入`from 剛剛的pyi檔(不用副檔名) import *` 
+2. 下載本專案資料夾的 .pyi 檔（可改名或放在其他資料夾）。
+3. 在 VSCode 中按 `shift+cmd+P` 搜尋 `setting json` 找到使用者設定的JSON檔。
+4. 將以下程式碼加入JSON文件 `"python.analysis.stubPath": "pyi放的路徑位置",` 。
+5. 在你正在撰寫的腳本中加入 `from 剛剛的pyi檔(不用副檔名) import *` 。
+
+# 使用方法
+
+- 輸入時會動態排列建議詞彙，以上下方向鍵切換，可即時預覽條目內容。
+- 將游標懸停在程式碼中 Glyphs 相關的詞彙上時會出現條目內容。
+- 在詞彙上按住 `cmd` 點選可連結到原始的字典檔，觀看字典的其他條目和上下文。
 
 # 附註
 目前第一版內容已經大致完成，因為是一人作業，若有發現任何疏漏或是改進的建議（檔案格式、語句詞彙疏漏或是閱讀排版）都歡迎透過 [issues 分頁](https://github.com/yintzuyuan/GlyphsApp-Stubs_zh-tw/issues) 提出意見。
