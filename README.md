@@ -1,3 +1,5 @@
+<p align="center">獻給想為 Glyphs 創作工具的人</p>
+
 # 前言
 
 這是字型設計軟體 [Glyphs](https://glyphsapp.com/) 工具程式撰寫相關的專案。
