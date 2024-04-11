@@ -12,18 +12,20 @@
 """
 Glyphs.app 物件模型結構
 -
+主程式 `GSApplication`\n
+║
 Fonts: 主要的字型容器，包含字型的全域訊息和結構。
-╟ Masters: 主板，不同的主要設計樣式 -> masterID -> Layers
+╟ Masters: 主板 -> masterID -> Layers
 ║   ╟ AxisValues: 主板對應的軸數值。
-║   ╙ Guides: 參考線，幫助設計師對齊和測量。
-╟ Glyphs: 包含單一字型中的所有字符。
-║   ╙ Layers: 字符的不同層，每個主板有對應的圖層。
+║   ╙ Guides: 參考線
+╟ Glyphs: 字符
+║   ╙ Layers: 圖層
 ║       ╟ Shapes: 包括路徑和組件的總稱。
-║       ║   ╟ Paths: 路徑，構成基本的向量形狀。
-║       ║   ║  ╙ Nodes: 節點，路徑的端點或轉折點。
-║       ║   ╙ Components: 組件，引用其他字符作為部件。
-║       ╟ Anchors: 錨點，用於標記連接位置，如標記和變音符號。
-║       ╟ Guides: 參考線，幫助設計師對齊和測量。
+║       ║   ╟ Paths: 路徑
+║       ║   ║  ╙ Nodes: 節點
+║       ║   ╙ Components: 組件
+║       ╟ Anchors: 錨點
+║       ╟ Guides: 參考線
 ║       ╙ Hints: 用於改進螢幕顯示效果。
 ╟ Styles: 樣式變體，如斜體或小型大寫字母。
 ║   ╙ AxisValues: 每個樣式變體的軸數值。
@@ -35,11 +37,11 @@ Fonts: 主要的字型容器，包含字型的全域訊息和結構。
 幫助開發者理解字型檔案中元素的階層和相互關係。
 """
 
-from typing import Any, Callable, List, Dict, Optional, Union, Final, Tuple
+from typing import Any, Callable, List, Dict, Optional, Union, Final, Tuple, TypeVar
 from typing import Literal
 from AppKit import NSDocument, NSPoint, NSRect, NSColor, NSBezierPath, NSPredicate, NSImage, NSIndexPath, NSAffineTransformStruct
 import datetime, time
-# from GlyphsApp import GSHandle
+from GlyphsApp import GSFontViewController
 
 class GSApplication: # 類別
 	"""
@@ -50,32 +52,51 @@ class GSApplication: # 類別
 	print(Glyphs)
 	<Glyphs.app>
 	"""
+	def __init__(self):
+		self.currentDocument = GSDocument()
+		self.documents = GSDocument()
+		self.font = GSFont()
+		self.fonts = GSFont()
+
 	#region 屬性(Properties)
 	@property
 	def currentDocument(self) -> Optional[GSDocument]:
 		"""
 		目前的`GSDocument`物件或為 None。
+
+		類型：
+		`GSDocument`
 		```
 		# 最上層的開啟文件
 		document = Glyphs.currentDocument
 		"""
 		...
 	@property
-	def documents(self) -> list:
+	def documents(self) -> List[GSDocument]:
 		"""
 		一個包含所有已開啟`GSDocument`物件的陣列。
+
+		類型：
+		`list`
 		"""
 		...
 	@property
-	def font(self) -> Optional[GSFont]:
+	def font(self) -> Optional[GSFont]: 
 		"""
 		目前的`GSFont`物件或為 None。
+
+		類型：
+		`GSFont`
 		"""
 		...
+	# def font(self, value: GSFont): ...
 	@property
-	def fonts(self) -> list:
+	def fonts(self) -> List[GSFont]:
 		"""
 		請注意，順序是由最後使用的字型決定的。通常，追加和擴充一般不會插入到列表的末端。
+
+		類型：
+		`list`
 		```
 		# 存取所有已開啟的字型
 		for font in Glyphs.fonts:
@@ -87,7 +108,7 @@ class GSApplication: # 類別
 		"""
 		...
 	@fonts.setter
-	def fonts(self, value: list): ...
+	def fonts(self, value: List[GSFont]): ...
 
 	@property
 	def reporters(self) -> List[object]:
@@ -150,8 +171,8 @@ class GSApplication: # 類別
 		# 這將恢復預設值
 		del Glyphs.defaults["com.MyName.foo.bar"]
 		"""
-		@defaults.setter
-		def defaults(self, value: dict): ...
+	@defaults.setter
+	def defaults(self, value: dict): ...
 
 	@property
 	def boolDefaults(self) -> bool:
@@ -217,10 +238,10 @@ class GSApplication: # 類別
 		bezierPath = NSBezierPath.bezierPathWithOvalInRect_(rect)
 		bezierPath.fill()
 		"""
-		@handleSize.setter
-		def handleSize(self, value: int): 
-			if not 0 <= value <= 2:
-				raise ValueError('Handle size must be between 0 and 2')
+	@handleSize.setter
+	def handleSize(self, value: int): 
+		if not 0 <= value <= 2:
+			raise ValueError('Handle size must be between 0 and 2')
 
 	@property
 	def versionString(self) -> str:
@@ -251,8 +272,8 @@ class GSApplication: # 類別
 		newMenuItem = NSMenuItem('我的選單標題', doStuff)
 		Glyphs.menu[EDIT_MENU].append(newMenuItem)
 		"""
-		@menu.setter
-		def menu(self, value: dict): ...
+	@menu.setter
+	def menu(self, value: dict): ...
 
 	#endregion
 	#region 函數(Functions)
@@ -442,10 +463,13 @@ class GSApplication: # 類別
 		"""
 	#endregion
 			
-class GSDocument: # 類別
+class GSDocument(): # 類別
 	"""
 	文件類別
 	"""
+	def __init__(self):
+		self.font = GSFont()
+
 	#region 屬性(Properties)
 	@property
 	def font(self) -> 'GSFont':
@@ -459,12 +483,33 @@ class GSDocument: # 類別
 		"""
 	#endregion
 
-class GSFont: # 類別
+class GSFont(): # 類別
 	"""	
 	字型物件的實作。這個物件包含了用於內插的主板。即使沒有內插的情況下，為了物件模型的一致性，仍然會有一個主板和一個實體來代表單一字型。
 
 	此外，字符附加到字型物件本身，而不是附加到主板。不同主板的字符作為圖層附加在這裡所附的字符物件上。
 	"""
+	def __init__(self):
+		self.parent = NSDocument()
+		self.masters = GSFontMaster()
+		self.instances = GSInstance()
+		self.axes = GSAxis()
+		self.properties = [GSFontInfoValueSingle(), GSFontInfoValueLocalized()]
+		self.metrics = GSMetric()
+		self.stems = GSMetric()
+		self.numbers = GSMetric()
+		self.glyphs = GSGlyph()
+		self.classes = GSClass()
+		self.features = GSFeature()
+		self.featurePrefixes = GSFeaturePrefix()
+		self.customParameters = GSCustomParameter()
+		self.selection = GSGlyph()
+		self.selectedLayers = GSLayer()
+		self.selectedFontMaster = GSFontMaster()
+		self.tabs = GSEditViewController()
+		self.fontView = GSFontViewController()
+		self.currentTab = GSEditViewController()
+
 	#region 屬性(Properties)
 	@property
 	def parent(self) -> 'NSDocument':
@@ -492,6 +537,10 @@ class GSFont: # 類別
 		del font.instances[0]
 		font.instances.remove(someInstance)
 		"""
+	@instances.setter
+	def instances(self, value: List[GSInstance]): ...
+	@instances.deleter
+	def instances(self): ...
 
 	@property
 	def axes(self) -> List[GSAxis]:
@@ -577,7 +626,7 @@ class GSFont: # 類別
 		master.numbers[number.name] = 123
 		"""
 	@property
-	def glyphs(self) -> list[GSGlyph] | Dict[Union[str, chr], int]:
+	def glyphs(self) -> List[GSGlyph] | Dict[Union[str, chr], int]:
 		"""
 		`GSGlyph`物件的集合。回傳一個列表，但您也可以通過索引或字符名稱或字符作為鍵來呼叫字符。
 
@@ -610,6 +659,10 @@ class GSFont: # 類別
 		# 刪除一個字符
 		del font.glyphs['A.alt']
 		"""
+	@glyphs.setter
+	def glyphs(self, value: List[GSGlyph] | Dict[Union[str, chr], int]): ...
+	@glyphs.deleter
+	def glyphs(self): ...
 
 	@property
 	def characterForGlyph(self, glyph) -> str:
@@ -833,7 +886,7 @@ class GSFont: # 類別
 	def note(self) -> str:
 		""""""
 	@property
-	def kerning(self) -> dict:
+	def kerning(self) -> Dict[str, int]:
 		"""
 		左到右寫作的調距。多級字典。第一級的鍵是`GSFontMaster.id`（每個主板都有自己的調距），第二級的鍵是第一個字符的`GSGlyph.id`或類別ID（@MMK_L_XX），第三級的鍵是第二個字符的字符ID或類別ID（@MMK_R_XX）。值是實際的調距值。
 
@@ -985,13 +1038,13 @@ class GSFont: # 類別
 	def previewRemoveOverlap(self, value: bool): ...
 
 	@property
-	def selection(self) -> list:
+	def selection(self) -> List[GSLayer]:
 		"""
 		回傳字型畫面中的所有選定的字符列表。
 		"""
 
 	@property
-	def selectedLayers(self) -> list:
+	def selectedLayers(self) -> List[GSLayer]:
 		"""
 		回傳使用中分頁中的所有選定的圖層列表。
 
@@ -1031,7 +1084,7 @@ class GSFont: # 類別
 		font.tabs[-1].close()
 		"""
 	@property
-	def fontView(self) -> GSEditViewController:
+	def fontView(self) -> GSFontViewController:
 		"""
 		字型畫面。
 		"""
@@ -1238,10 +1291,12 @@ class GSFont: # 類別
 		"""
 	#endregion
 		
-class GSAxis: # 類別
+class GSAxis(GSFont): # 類別
 	"""
 	軸物件的實作。
 	"""
+	def __init__(self):
+		self.font = GSFont()
 	#region 屬性(Properties)
 	@property
 	def font(self) -> 'GSFont':
@@ -1279,10 +1334,12 @@ class GSAxis: # 類別
 
 	#endregion
 		
-class GSMetric: # 類別
+class GSMetric(GSFont): # 類別
 	"""
 	度量物件的實作。它用於連接主板中的度量和字幹。
 	"""
+	def __init__(self):
+		self.font = GSFont()
 	#region 屬性(Properties)
 	@property
 	def font(self) -> 'GSFont':
@@ -1332,10 +1389,12 @@ class GSMetric: # 類別
 	def horizontal(self, value: bool): ...
 	#endregion
 
-class GSFontMaster: # 類別
+class GSFontMaster(GSFont): # 類別
 	"""
 	主板物件的實作。這對應於字型訊息中的“主板”面板。在 Glyphs.app 中，每個主版的字符不是在這裡取用，而是作為附加到字型物件上的字符圖層。請參考頂部的資訊圖表以便更好地理解。
 	"""
+	def __init__(self):
+		self.font = GSFont()
 	#region 屬性(Properties)
 	@property
 	def id(self) -> 'str':
@@ -1443,7 +1502,7 @@ class GSFontMaster: # 類別
 	@property
 	def metrics(self) -> Dict[str, GSMetricValue]:
 		"""
-		所有`GSMetricValue`物件的字典。鍵是`font.metrics[].id`
+		所有`GSMetricValue`物件的字典。鍵是`font.metrics.id`
 		```
 		for metric in Font.metrics:
 			if metric.type == GSMetricsTypexHeight and metric.filter is None:
@@ -1606,10 +1665,13 @@ class GSAlignmentZone: # 類別
 
 	#endregion
 
-class GSInstance: # 類別
+class GSInstance(GSFont): # 類別
 	"""
 	實體物件的實作。這對應於字型資訊中的“匯出”面板。
 	"""
+	def __init__(self):
+		self.font = GSFont()
+
 	#region 屬性(Properties)
 	@property
 	def exports(self) -> 'bool':
@@ -1697,7 +1759,7 @@ class GSInstance: # 類別
 	def axes(self, value: 'list'): ...
 
 	@property
-	def internalAxesValues(self) -> 'list':
+	def internalAxesValues(self) -> List[float]:
 		"""
 		每個軸位置的浮點數列表
 		```		
@@ -1711,10 +1773,10 @@ class GSInstance: # 類別
 		3.2版新增
 		"""
 	@internalAxesValues.setter
-	def internalAxesValues(self, value: 'list'): ...
+	def internalAxesValues(self, value: List[float]): ...
 
 	@property
-	def externalAxesValues(self) -> 'list':
+	def externalAxesValues(self) -> List[float]:
 		"""
 		浮點數列表，指定每個軸對於用戶面向值的位置。
 		```		
@@ -1728,7 +1790,7 @@ class GSInstance: # 類別
 		3.2版新增
 		"""
 	@externalAxesValues.setter
-	def externalAxesValues(self, value: 'list'): ...
+	def externalAxesValues(self, value: List[float]): ...
 
 	@property
 	def properties(self) -> List[Union[GSFontInfoValueSingle, GSFontInfoValueLocalized]]:
@@ -2124,18 +2186,18 @@ class GSInstance: # 類別
 		"""
 		自訂參數。`GSCustomParameter`物件的列表。您可以按名稱或按索引取用它們。
 		```			
-			# 取用所有參數
-			for parameter in instance.customParameters:
-				print(parameter)
-			# 設定參數
-			instance.customParameters['hheaLineGap'] = 10
-			# 新增多個參數：
-			parameter = GSCustomParameter("Name Table Entry", "1 1;"font name")
-			instance.customParameters.append(parameter)
-			parameter = GSCustomParameter("Name Table Entry", "2 1;"style name")
-			instance.customParameters.append(parameter)
-			# 刪除參數
-			del instance.customParameters['hheaLineGap']
+		# 取用所有參數
+		for parameter in instance.customParameters:
+			print(parameter)
+		# 設定參數
+		instance.customParameters['hheaLineGap'] = 10
+		# 新增多個參數：
+		parameter = GSCustomParameter("Name Table Entry", "1 1;"font name")
+		instance.customParameters.append(parameter)
+		parameter = GSCustomParameter("Name Table Entry", "2 1;"style name")
+		instance.customParameters.append(parameter)
+		# 刪除參數
+		del instance.customParameters['hheaLineGap']
 		"""
 	@customParameters.setter
 	def customParameters(self, value: Union[List[GSCustomParameter], Dict[str, GSCustomParameter]]): ...
@@ -2147,10 +2209,10 @@ class GSInstance: # 類別
 		"""
 		儲存用戶資料的字典。使用不重複鍵，並且只使用可以儲存在屬性列表中的物件（字符串、列表、字典、數字、NSData），否則將無法從儲存的檔案中恢復資料。
 		```			
-			# 設定值
-			instance.userData['rememberToMakeCoffee'] = True
-			# 刪除值
-			del instance.userData['rememberToMakeCoffee']
+		# 設定值
+		instance.userData['rememberToMakeCoffee'] = True
+		# 刪除值
+		del instance.userData['rememberToMakeCoffee']
 		"""
 	@userData.setter
 	def userData(self, value: Dict[str, Union[bool, str, List, Dict, float, bytes]]): ...
@@ -2162,10 +2224,10 @@ class GSInstance: # 類別
 		"""
 		用於暫存資料的字典。使用不重複鍵。這不會儲存到檔案。如果需要資料持續，請使用`instance.userData`
 		```			
-			# 設定值
-			instance.tempData['rememberToMakeCoffee'] = True
-			# 刪除值
-			del instance.tempData['rememberToMakeCoffee']
+		# 設定值
+		instance.tempData['rememberToMakeCoffee'] = True
+		# 刪除值
+		del instance.tempData['rememberToMakeCoffee']
 		"""
 	@tempData.setter
 	def tempData(self, value: Dict[str, Union[bool, str, List, Dict, float, bytes]]): ...
@@ -2205,13 +2267,13 @@ class GSInstance: # 類別
 
 		注意：當連續取用該實體的多個屬性時，建議將實體建立一次到變量中，然後使用該變量。否則，每次取用時，實體物件將完全進行內插。參見下面的示例。
 		```			
-			# 建立實體一次
-			interpolated = Glyphs.font.instances[0].interpolatedFont
-			# 然後多次取用它
-			print(interpolated.masters)
-			>> (<GSFontMaster "Light" width 100.0 weight 75.0>)
-			print(interpolated.instances)
-			>> (<GSInstance "Web" width 100.0 weight 75.0>)
+		# 建立實體一次
+		interpolated = Glyphs.font.instances[0].interpolatedFont
+		# 然後多次取用它
+		print(interpolated.masters)
+		>> (<GSFontMaster "Light" width 100.0 weight 75.0>)
+		print(interpolated.instances)
+		>> (<GSInstance "Web" width 100.0 weight 75.0>)
 		"""
 	@interpolatedFont.setter
 	def interpolatedFont(self, value: GSFont): ...
@@ -2244,12 +2306,12 @@ class GSInstance: # 類別
 		回傳：
 		成功時為True；失敗時為錯誤訊息。
 		```		
-			# 將所有實體匯出為OpenType（.otf）和WOFF2到用戶的字型檔案夾
-			exportFolder = '/Users/myself/Library/Fonts'
-			for instance in Glyphs.font.instances:
-				instance.generate(FontPath=exportFolder, Containers=[PLAIN, WOFF2])
-			Glyphs.showNotification('匯出字型', '已成功匯出字型 %s ' % (Glyphs.font.familyName))
-			lastExportedFilePath
+		# 將所有實體匯出為OpenType（.otf）和WOFF2到用戶的字型檔案夾
+		exportFolder = '/Users/myself/Library/Fonts'
+		for instance in Glyphs.font.instances:
+			instance.generate(FontPath=exportFolder, Containers=[PLAIN, WOFF2])
+		Glyphs.showNotification('匯出字型', '已成功匯出字型 %s ' % (Glyphs.font.familyName))
+		lastExportedFilePath
 		"""
 
 	def lastExportedFilePath(self) -> 'GSFont':
@@ -2258,13 +2320,13 @@ class GSInstance: # 類別
 
 		注意：當連續取用該實體的多個屬性時，建議將實體建立一次到變量中，然後使用該變量。否則，每次取用時，實體物件將完全進行內插。參見下面的示例。
 		```				
-			# 建立實體一次
-			interpolated = Glyphs.font.instances[0].interpolatedFont
-			# 然後多次取用它
-			print(interpolated.masters)
-			>> (<GSFontMaster "Light" width 100.0 weight 75.0>)
-			print(interpolated.instances)
-			>> (<GSInstance "Web" width 100.0 weight 75.0>)
+		# 建立實體一次
+		interpolated = Glyphs.font.instances[0].interpolatedFont
+		# 然後多次取用它
+		print(interpolated.masters)
+		>> (<GSFontMaster "Light" width 100.0 weight 75.0>)
+		print(interpolated.instances)
+		>> (<GSInstance "Web" width 100.0 weight 75.0>)
 		"""
 
 	def addAsMaster(self):
@@ -2281,18 +2343,18 @@ class GSCustomParameter: # 類別
 
 	您可以將`GSCustomParameter`物件附加到`GSFont.customParameters`，但這樣可能會導致重複。最好通過其字典介面取用自訂參數，如下所示：
 	```		
-		# 取用所有參數
-		for parameter in font.customParameters:
-			print(parameter)
-		# 設定參數
-		font.customParameters['trademark'] = 'ThisFont is a trademark by MyFoundry.com'
-		# 新增多個參數：
-		parameter = GSCustomParameter("Name Table Entry", "1 1;"font name")
-		font.customParameters.append(parameter)
-		parameter = GSCustomParameter("Name Table Entry", "2 1;"style name")
-		font.customParameters.append(parameter)
-		# 刪除參數
-		del font.customParameters['trademark']
+	# 取用所有參數
+	for parameter in font.customParameters:
+		print(parameter)
+	# 設定參數
+	font.customParameters['trademark'] = 'ThisFont is a trademark by MyFoundry.com'
+	# 新增多個參數：
+	parameter = GSCustomParameter("Name Table Entry", "1 1;"font name")
+	font.customParameters.append(parameter)
+	parameter = GSCustomParameter("Name Table Entry", "2 1;"style name")
+	font.customParameters.append(parameter)
+	# 刪除參數
+	del font.customParameters['trademark']
 	"""
 	def __init__(self, 
 			  name: str = None, 
@@ -2342,7 +2404,7 @@ class GSCustomParameter: # 類別
 
 	#endregion
 
-class GSClass: # 類別
+class GSClass(GSFont): # 類別
 	"""
 	類別物件的實作。用於儲存OpenType類別。
 
@@ -2403,10 +2465,10 @@ class GSClass: # 類別
 		"""
 		用於暫存資料的字典。使用不重複鍵。這不會儲存到檔案。如果需要資料持續，請使用`class.userData`
 		```			
-			# 設定值
-			class.tempData['rememberToMakeCoffee'] = True
-			# 刪除值
-			del class.tempData['rememberToMakeCoffee']
+		# 設定值
+		class.tempData['rememberToMakeCoffee'] = True
+		# 刪除值
+		del class.tempData['rememberToMakeCoffee']
 		"""
 	@tempData.setter
 	def tempData(self, value: Dict[str, Union[bool, str, List, Dict, float, bytes]]): ...
@@ -2415,7 +2477,7 @@ class GSClass: # 類別
 
 	#endregion
 
-class GSFeaturePrefix: # 類別
+class GSFeaturePrefix(GSFont): # 類別
 	"""
 	特性前綴物件的實作。用於儲存需要在特性之外的東西，如單獨查找。
 
@@ -2473,7 +2535,7 @@ class GSFeaturePrefix: # 類別
 
 	#endregion
 
-class GSFeature: # 類別
+class GSFeature(GSFont): # 類別
 	"""
 	特性物件的實作。用於在字型資訊中實作OpenType特性。
 
@@ -2554,10 +2616,10 @@ class GSFeature: # 類別
 		"""
 		用於暫存資料的字典。使用不重複鍵。這不會儲存到檔案。如果需要資料持續，請使用`feature.userData`
 		```			
-			# 設定值
-			feature.tempData['rememberToMakeCoffee'] = True
-			# 刪除值
-			del feature.tempData['rememberToMakeCoffee']
+		# 設定值
+		feature.tempData['rememberToMakeCoffee'] = True
+		# 刪除值
+		del feature.tempData['rememberToMakeCoffee']
 		"""
 	@tempData.setter
 	def tempData(self, value: Dict[str, Union[bool, str, List, Dict, float, bytes]]): ...
@@ -2570,18 +2632,18 @@ class GSFeature: # 類別
 		"""
 		呼叫此特性的自動特性代碼生成器。您可以使用此功能在匯出之前更新所有OpenType特性。
 		```			
-			# 首先更新所有特性
-			for feature in font.features:
-				if feature.automatic:
-					feature.update()
-			# 然後匯出字型
-			for instance in font.instances:
-				if instance.active:
-					instance.generate()
+		# 首先更新所有特性
+		for feature in font.features:
+			if feature.automatic:
+				feature.update()
+		# 然後匯出字型
+		for instance in font.instances:
+			if instance.active:
+				instance.generate()
 		"""
 	#endregion
 
-class GSGlyph: #類別
+class GSGlyph(GSFont): #類別
 	"""
 	字符物件的實作。
 
@@ -2593,6 +2655,10 @@ class GSGlyph: #類別
 			  ):
 		self.name = name
 		self.autoName = autoName
+		self.parent = GSFont()
+		self.layers = GSLayer()
+		self.glyphInfo = GSGlyphInfo()
+		self.colorObject = NSColor()
 		"""
 		參數：
 		name – 字符名稱
@@ -2605,52 +2671,52 @@ class GSGlyph: #類別
 		引用包含字符的`GSFont`物件。
 		"""
 	@property
-	def layers(self) -> Union[List[GSLayer], dict]:
+	def layers(self) -> Union[List[GSLayer], Dict[GSFontMaster, GSLayer]]:
 		"""
 		字符圖層，`GSLayer`物件的集合。您可以通過索引或圖層ID取用它們，圖層ID可以是`GSFontMaster.id`。圖層ID通常是由Glyphs.app選取的唯一字符串，而不是手動設定。它們可能看起來像這樣：3B85FBE0-2D2B-4203-8F3D-7112D42D745E
 		```			
-			# 獲取使用中圖層
-			layer = font.selectedLayers[0]
-			# 獲取此層的字符
-			glyph = layer.parent
-			# 取用字符的所有圖層
-			for layer in glyph.layers:
-				print(layer.name)
-			# 取用目前字符主板的圖層...
-			# （也用於取用在字型檢視中選中字符的特定圖層）
-			layer = glyph.layers[font.selectedFontMaster.id]
-			# 直接取用目前使用中字符的“Bold”圖層
-			for master in font.masters:
-				if master.name == 'Bold':
-					id = master.id
-					break
-			layer = glyph.layers[id]
-			# 新增新圖層
-			newLayer = GSLayer()
-			newLayer.name = '{125, 100}' #（字符級中間主板示例）
-			# 您可以設定此圖層將關聯的主板ID，否則將使用第一個主板
-			newLayer.associatedMasterId = font.masters[-1].id
-			font.glyphs['a'].layers.append(newLayer)
-			# 拷貝不同名稱的圖層
-			newLayer = font.glyphs['a'].layers[0].copy()
-			newLayer.name = 'Copy of layer'
-			# 提供參考，此時仍將是舊的圖層ID（在拷貝時）
-			print(newLayer.layerId)
-			font.glyphs['a'].layers.append(newLayer)
-			# 提供參考，此圖層將在附加後被分配新的圖層ID
-			print(newLayer.layerId)
-			# 用另一個圖層替換第二主板圖層
-			newLayer = GSLayer()
-			newLayer.layerId = font.masters[1].id
-			font.glyphs['a'].layers[font.masters[1].id] = newLayer
-			# 刪除字符的最後一個圖層
-			# （對於主板圖層也有效。它們將被清空）
-			del font.glyphs['a'].layers[-1]
-			# 刪除目前使用中圖層
-			del font.glyphs['a'].layers[font.selectedLayers[0].layerId]
+		# 獲取使用中圖層
+		layer = font.selectedLayers[0]
+		# 獲取此層的字符
+		glyph = layer.parent
+		# 取用字符的所有圖層
+		for layer in glyph.layers:
+			print(layer.name)
+		# 取用目前字符主板的圖層...
+		# （也用於取用在字型檢視中選中字符的特定圖層）
+		layer = glyph.layers[font.selectedFontMaster.id]
+		# 直接取用目前使用中字符的“Bold”圖層
+		for master in font.masters:
+			if master.name == 'Bold':
+				id = master.id
+				break
+		layer = glyph.layers[id]
+		# 新增新圖層
+		newLayer = GSLayer()
+		newLayer.name = '{125, 100}' #（字符級中間主板示例）
+		# 您可以設定此圖層將關聯的主板ID，否則將使用第一個主板
+		newLayer.associatedMasterId = font.masters[-1].id
+		font.glyphs['a'].layers.append(newLayer)
+		# 拷貝不同名稱的圖層
+		newLayer = font.glyphs['a'].layers[0].copy()
+		newLayer.name = 'Copy of layer'
+		# 提供參考，此時仍將是舊的圖層ID（在拷貝時）
+		print(newLayer.layerId)
+		font.glyphs['a'].layers.append(newLayer)
+		# 提供參考，此圖層將在附加後被分配新的圖層ID
+		print(newLayer.layerId)
+		# 用另一個圖層替換第二主板圖層
+		newLayer = GSLayer()
+		newLayer.layerId = font.masters[1].id
+		font.glyphs['a'].layers[font.masters[1].id] = newLayer
+		# 刪除字符的最後一個圖層
+		# （對於主板圖層也有效。它們將被清空）
+		del font.glyphs['a'].layers[-1]
+		# 刪除目前使用中圖層
+		del font.glyphs['a'].layers[font.selectedLayers[0].layerId]
 		"""
 	@layers.setter
-	def layers(self, value: Union[List[GSLayer], dict]): ...
+	def layers(self, value: Union[List[GSLayer], Dict[GSFontMaster, GSLayer]]): ...
 	@layers.deleter
 	def layers(self): ...
 
@@ -2906,11 +2972,11 @@ class GSGlyph: #類別
 
 		如果字符具有`leftKerningGroup`屬性，則將回傳內部使用的 @MMK_R_xx 表示法（請注意，其中的R表示LTR字型的調距對的右側，對應於字符的左側調距群組）。如果未給出組，則將回傳字符的名稱。
 		```			
-			# 為'T'和所有'a'調距類別成員設定調距
-			# 對於LTR字型，始終使用第一（左）字符的.rightKerningKey，第二（右）字符的.leftKerningKey。
-			font.setKerningForPair(font.selectedFontMaster.id, font.glyphs['T'].rightKerningKey, font.glyphs['a'].leftKerningKey, -60)
-			# 對應於：
-			font.setKerningForPair(font.selectedFontMaster.id, 'T', '@MMK_R_a', -60)
+		# 為'T'和所有'a'調距類別成員設定調距
+		# 對於LTR字型，始終使用第一（左）字符的.rightKerningKey，第二（右）字符的.leftKerningKey。
+		font.setKerningForPair(font.selectedFontMaster.id, font.glyphs['T'].rightKerningKey, font.glyphs['a'].leftKerningKey, -60)
+		# 對應於：
+		font.setKerningForPair(font.selectedFontMaster.id, 'T', '@MMK_R_a', -60)
 		"""
 	@leftKerningKey.setter
 	def leftKerningKey(self, value: str): ...
@@ -2994,19 +3060,19 @@ class GSGlyph: #類別
 		"""
 		字符在 UI 中的顏色標籤
 		```		
-			glyph.color = 0         # 紅色
-			glyph.color = 1         # 橙色
-			glyph.color = 2         # 褐色
-			glyph.color = 3         # 黃色
-			glyph.color = 4         # 淺綠色
-			glyph.color = 5         # 深綠色
-			glyph.color = 6         # 淺藍色
-			glyph.color = 7         # 藍色
-			glyph.color = 8         # 紫色
-			glyph.color = 9         # 洋紅色
-			glyph.color = 10        # 灰色
-			glyph.color = 11        # 深灰色
-			glyph.color = None      # 未標記，白色（在版本1235之前，使用-1）
+		glyph.color = 0         # 紅色
+		glyph.color = 1         # 橙色
+		glyph.color = 2         # 褐色
+		glyph.color = 3         # 黃色
+		glyph.color = 4         # 淺綠色
+		glyph.color = 5         # 深綠色
+		glyph.color = 6         # 淺藍色
+		glyph.color = 7         # 藍色
+		glyph.color = 8         # 紫色
+		glyph.color = 9         # 洋紅色
+		glyph.color = 10        # 灰色
+		glyph.color = 11        # 深灰色
+		glyph.color = None      # 未標記，白色（在版本1235之前，使用-1）
 		"""
 	@color.setter
 	def color(self, value: int): ...
@@ -3016,24 +3082,24 @@ class GSGlyph: #類別
 		"""
 		字符的顏色物件，用於插件中的繪製。
 		```			
-			# 使用字符顏色繪製輪廓
-			glyph.colorObject.set()
-			# 獲取RGB（和alpha）值（作為0..1的浮點數，必要時乘以256）
-			R, G, B, A = glyph.colorObject.colorUsingColorSpace_(NSColorSpace.genericRGBColorSpace()).getRed_green_blue_alpha_(None, None, None, None)
-			print(R, G, B)
-			>> 0.617805719376 0.958198726177 0.309286683798
-			print(round(R * 256), int(G * 256), int(B * 256))
-			>> 158 245 245
-			# 繪製圖層
-			glyph.layers[0].bezierPath.fill()
-			# 設定字符顏色。
-			glyph.colorObject = NSColor.colorWithDeviceRed_green_blue_alpha_(247.0 / 255.0, 74.0 / 255.0, 62.9 / 255.0, 1)
-			# 或：
-			glyph.colorObject = (247.0, 74.0, 62.9) # 最大255.0
-			# 或：
-			glyph.colorObject = (247.0, 74.0, 62.9, 1) # 帶alpha
-			# 或：
-			glyph.colorObject = (0.968, 0.29, 0.247, 1) # 最大1.0
+		# 使用字符顏色繪製輪廓
+		glyph.colorObject.set()
+		# 獲取RGB（和alpha）值（作為0..1的浮點數，必要時乘以256）
+		R, G, B, A = glyph.colorObject.colorUsingColorSpace_(NSColorSpace.genericRGBColorSpace()).getRed_green_blue_alpha_(None, None, None, None)
+		print(R, G, B)
+		>> 0.617805719376 0.958198726177 0.309286683798
+		print(round(R * 256), int(G * 256), int(B * 256))
+		>> 158 245 245
+		# 繪製圖層
+		glyph.layers[0].bezierPath.fill()
+		# 設定字符顏色。
+		glyph.colorObject = NSColor.colorWithDeviceRed_green_blue_alpha_(247.0 / 255.0, 74.0 / 255.0, 62.9 / 255.0, 1)
+		# 或：
+		glyph.colorObject = (247.0, 74.0, 62.9) # 最大255.0
+		# 或：
+		glyph.colorObject = (247.0, 74.0, 62.9, 1) # 帶alpha
+		# 或：
+		glyph.colorObject = (0.968, 0.29, 0.247, 1) # 最大1.0
 		"""
 	@colorObject.setter
 	def colorObject(self, value: NSColor): ...
@@ -3053,10 +3119,10 @@ class GSGlyph: #類別
 		"""
 		如果在字型畫面中選中字符，則回傳True。這與`font.selectedLayers`屬性不同，後者回傳使用中分頁中的選取。
 		```			
-			# 取用字型畫面中選中的所有字符
-			for glyph in font.glyphs:
-				if glyph.selected:
-					print(glyph)
+		# 取用字型畫面中選中的所有字符
+		for glyph in font.glyphs:
+			if glyph.selected:
+				print(glyph)
 		
 		"""
 
@@ -3071,10 +3137,10 @@ class GSGlyph: #類別
 		"""
 		用於儲存用戶資料的字典。使用不重複鍵，僅使用可以儲存在屬性列表中的物件（字符串，列表，字典，數字，NSData），否則資料將無法從儲存的檔案中恢復。
 		```			
-			# 設定值
-			glyph.userData['rememberToMakeCoffee'] = True
-			# 刪除值
-			del glyph.userData['rememberToMakeCoffee']
+		# 設定值
+		glyph.userData['rememberToMakeCoffee'] = True
+		# 刪除值
+		del glyph.userData['rememberToMakeCoffee']
 		"""
 	@userData.setter
 	def userData(self, value: Dict[str, Union[bool, str, List, Dict, float, bytes]]): ...
@@ -3082,7 +3148,7 @@ class GSGlyph: #類別
 	def userData(self): ...
 
 	@property
-	def smartComponentAxes(self) -> 'list':
+	def smartComponentAxes(self) -> List[GSSmartComponentAxis]:
 		"""
 		一個`GSSmartComponentAxis`物件的列表。
 
@@ -3090,22 +3156,22 @@ class GSGlyph: #類別
 
 		參見 https://glyphsapp.com/tutorials/smart-components 以供參考。
 		```			
-			# 向字符新增兩個內插軸
-			axis1 = GSSmartComponentAxis()
-			axis1.name = 'crotchDepth'
-			axis1.topValue = 0
-			axis1.bottomValue = -100
-			g.smartComponentAxes.append(axis1)
-			axis2 = GSSmartComponentAxis()
-			axis2.name = 'shoulderWidth'
-			axis2.topValue = 100
-			axis2.bottomValue = 0
-			g.smartComponentAxes.append(axis2)
-			# 刪除一個軸
-			del g.smartComponentAxes[1]
+		# 向字符新增兩個內插軸
+		axis1 = GSSmartComponentAxis()
+		axis1.name = 'crotchDepth'
+		axis1.topValue = 0
+		axis1.bottomValue = -100
+		g.smartComponentAxes.append(axis1)
+		axis2 = GSSmartComponentAxis()
+		axis2.name = 'shoulderWidth'
+		axis2.topValue = 100
+		axis2.bottomValue = 0
+		g.smartComponentAxes.append(axis2)
+		# 刪除一個軸
+		del g.smartComponentAxes[1]
 		"""
 	@smartComponentAxes.setter
-	def smartComponentAxes(self, value: list): ...
+	def smartComponentAxes(self, value: List[GSSmartComponentAxis]): ...
 	@smartComponentAxes.deleter
 	def smartComponentAxes(self): ...
 
@@ -3142,12 +3208,30 @@ class GSGlyph: #類別
 		"""
 	#endregion
 
-class GSLayer: # 類別
+class GSLayer(GSGlyph): # 類別
 	"""
 	圖層物件的實作。
 
 	有關如何取用它們的詳細訊息，請查看`GSGlyph.layers`
 	"""
+	def __init__(self):
+		self.parent = GSGlyph()
+		self.master = GSFontMaster()
+		self.colorObject = NSColor()
+		self.components = GSComponent()
+		self.guides = GSGuide()
+		self.annotations = GSAnnotation()
+		self.hints = GSHint()
+		self.anchors = GSAnchor()
+		self.shapes = [GSShape(), GSPath(), GSComponent()]
+		self.paths = GSPath()
+		self.selection = [GSNode(), GSAnchor(), GSShape()]
+		self.selectionBounds = NSRect()
+		self.metrics = GSMetricValue()
+		self.background = GSLayer()
+		self.backgroundImage = GSBackgroundImage()
+		self.smartComponentPoleMapping = GSSmartComponentAxis()
+
 	#region 屬性(Properties)
 	@property
 	def parent(self) -> 'GSGlyph':
@@ -3190,25 +3274,25 @@ class GSLayer: # 類別
 
 		對於主板圖層，這應該是`fontMaster`的ID。它可能看起來像這樣：FBCA074D-FCF3-427E-A700-7E318A949AE5
 		```			
-			# 查看活動圖層的ID
-			id = font.selectedLayers[0].layerId
-			print(id)
-			>> FBCA074D-FCF3-427E-A700-7E318A949AE5
-			# 通過此ID取用圖層
-			layer = font.glyphs["a"].layers[id]
-			layer = font.glyphs["a"].layers['FBCA074D-FCF3-427E-A700-7E318A949AE5']
-			# 對於主板圖層，使用主板的ID
-			layer = font.glyphs["a"].layers[font.masters[0].id]
+		# 查看活動圖層的ID
+		id = font.selectedLayers[0].layerId
+		print(id)
+		>> FBCA074D-FCF3-427E-A700-7E318A949AE5
+		# 通過此ID取用圖層
+		layer = font.glyphs["a"].layers[id]
+		layer = font.glyphs["a"].layers['FBCA074D-FCF3-427E-A700-7E318A949AE5']
+		# 對於主板圖層，使用主板的ID
+		layer = font.glyphs["a"].layers[font.masters[0].id]
 		"""
 	@property
 	def attributes(self) -> 'dict':
 		"""
 		圖層屬性，如 axisRules, coordinates, colorPalette, sbixSize, color, svg
 		```			
-			axis = font.axes[0]
-			layer.attributes["axisRules"] = {axis.axisId: {'min': 100}}
-			layer.attributes["coordinates"] = {axis.axisId: 99}
-			layer.attributes["colorPalette"] = 2
+		axis = font.axes[0]
+		layer.attributes["axisRules"] = {axis.axisId: {'min': 100}}
+		layer.attributes["coordinates"] = {axis.axisId: 99}
+		layer.attributes["colorPalette"] = 2
 		"""
 	@attributes.setter
 	def attributes(self, value: dict): ...
@@ -3218,19 +3302,19 @@ class GSLayer: # 類別
 		"""
 		UI中的圖層顏色標籤
 		```			
-			layer.color = 0     # 紅色
-			layer.color = 1     # 橙色
-			layer.color = 2     # 褐色
-			layer.color = 3     # 黃色
-			layer.color = 4     # 淺綠色
-			layer.color = 5     # 深綠色
-			layer.color = 6     # 淺藍色
-			layer.color = 7     # 藍色
-			layer.color = 8     # 紫色
-			layer.color = 9     # 洋紅色
-			layer.color = 10    # 灰色
-			layer.color = 11    # 深灰色
-			layer.color = None  # 未標記，白色（在版本1235之前，使用-1）
+		layer.color = 0     # 紅色
+		layer.color = 1     # 橙色
+		layer.color = 2     # 褐色
+		layer.color = 3     # 黃色
+		layer.color = 4     # 淺綠色
+		layer.color = 5     # 深綠色
+		layer.color = 6     # 淺藍色
+		layer.color = 7     # 藍色
+		layer.color = 8     # 紫色
+		layer.color = 9     # 洋紅色
+		layer.color = 10    # 灰色
+		layer.color = 11    # 深灰色
+		layer.color = None  # 未標記，白色（在版本1235之前，使用-1）
 		"""
 	@color.setter
 	def color(self, value: int): ...
@@ -3240,18 +3324,18 @@ class GSLayer: # 類別
 		"""
 		圖層顏色的NSColor物件，用於插件中的繪製。
 		```			
-			# 使用圖層顏色繪製輪廓
-			layer.colorObject.set()
-			# 獲取RGB（和alpha）值（作為0..1的浮點數，必要時乘以256）
-			R, G, B, A = layer.colorObject.colorUsingColorSpace_(NSColorSpace.genericRGBColorSpace()).getRed_green_blue_alpha_(None, None, None, None)
-			print(R, G, B)
-			>> 0.617805719376 0.958198726177 0.309286683798
-			print(round(R * 256), int(G * 256), int(B * 256))
-			>> 158 245 245
-			# 繪製圖層
-			layer.bezierPath.fill()
-			# 設定圖層顏色。
-			layer.colorObject = NSColor.colorWithDeviceRed_green_blue_alpha_(247.0 / 255.0, 74.0 / 255.0, 62.9 / 255.0, 1)
+		# 使用圖層顏色繪製輪廓
+		layer.colorObject.set()
+		# 獲取RGB（和alpha）值（作為0..1的浮點數，必要時乘以256）
+		R, G, B, A = layer.colorObject.colorUsingColorSpace_(NSColorSpace.genericRGBColorSpace()).getRed_green_blue_alpha_(None, None, None, None)
+		print(R, G, B)
+		>> 0.617805719376 0.958198726177 0.309286683798
+		print(round(R * 256), int(G * 256), int(B * 256))
+		>> 158 245 245
+		# 繪製圖層
+		layer.bezierPath.fill()
+		# 設定圖層顏色。
+		layer.colorObject = NSColor.colorWithDeviceRed_green_blue_alpha_(247.0 / 255.0, 74.0 / 255.0, 62.9 / 255.0, 1)
 		"""
 	@colorObject.setter
 	def colorObject(self, value: NSColor): ...
@@ -3261,27 +3345,27 @@ class GSLayer: # 類別
 		"""
 		`GSComponent`物件的集合。這只是一個幫助代理，用於疊代所有組件（不包括路徑）。要新增/刪除項目，請使用`GSLayer.shapes`。
 		```			
-			for component in layer.components:
-				print(component)
+		for component in layer.components:
+			print(component)
 		"""
 	@property
 	def guides(self) -> List[GSGuide]:
 		"""
 		`GSGuide`物件的清單。
 		```			
-			# 取用所有參考線
-			for guide in layer.guides:
-				print(guide)
-			# 新增參考線
-			newGuide = GSGuide()
-			newGuide.position = NSPoint(100, 100)
-			newGuide.angle = -10.0
-			layer.guides.append(newGuide)
-			# 刪除參考線
-			del layer.guides[0]
-			# 從另一個圖層拷貝參考線
-			import copy
-			layer.guides = copy.copy(anotherlayer.guides)
+		# 取用所有參考線
+		for guide in layer.guides:
+			print(guide)
+		# 新增參考線
+		newGuide = GSGuide()
+		newGuide.position = NSPoint(100, 100)
+		newGuide.angle = -10.0
+		layer.guides.append(newGuide)
+		# 刪除參考線
+		del layer.guides[0]
+		# 從另一個圖層拷貝參考線
+		import copy
+		layer.guides = copy.copy(anotherlayer.guides)
 		"""
 	@guides.setter
 	def guides(self, value: List[GSGuide]): ...
@@ -3293,20 +3377,20 @@ class GSLayer: # 類別
 		"""
 		`GSAnnotation`物件的清單。
 		```			
-			# 取用所有註記
-			for annotation in layer.annotations:
-				print(annotation)
-			# 新增新註記
-			newAnnotation = GSAnnotation()
-			newAnnotation.type = TEXT
-			newAnnotation.text = '靠，這曲線太醜了！'
-			layer.annotations.append(newAnnotation)
-			# 刪除註記
-			del layer.annotations[0]
-			# 從另一個圖層拷貝註記
-			import copy
-			layer.annotations = copy.copy(anotherlayer.annotations)
-			"""
+		# 取用所有註記
+		for annotation in layer.annotations:
+			print(annotation)
+		# 新增新註記
+		newAnnotation = GSAnnotation()
+		newAnnotation.type = TEXT
+		newAnnotation.text = '靠，這曲線太醜了！'
+		layer.annotations.append(newAnnotation)
+		# 刪除註記
+		del layer.annotations[0]
+		# 從另一個圖層拷貝註記
+		import copy
+		layer.annotations = copy.copy(anotherlayer.annotations)
+		"""
 	@annotations.setter
 	def annotations(self, value: List[GSAnnotation]): ...
 	@annotations.deleter
@@ -3340,16 +3424,16 @@ class GSLayer: # 類別
 		"""
 		`GSAnchor`物件的清單。
 		```			
-			# 取用所有錨點
-			for a in layer.anchors:
-				print(a)
-			# 新增一個新錨點
-			layer.anchors['top'] = GSAnchor()
-			# 刪除錨點
-			del layer.anchors['top']
-			# 從另一個圖層拷貝錨點
-			import copy
-			layer.anchors = copy.copy(anotherlayer.anchors)
+		# 取用所有錨點
+		for a in layer.anchors:
+			print(a)
+		# 新增一個新錨點
+		layer.anchors['top'] = GSAnchor()
+		# 刪除錨點
+		del layer.anchors['top']
+		# 從另一個圖層拷貝錨點
+		import copy
+		layer.anchors = copy.copy(anotherlayer.anchors)
 		"""
 	@anchors.setter
 	def anchors(self, value: Union[List[GSAnchor], 'dict']): ...
@@ -3357,21 +3441,21 @@ class GSLayer: # 類別
 	def anchors(self): ...
 
 	@property
-	def shapes(self) -> List[GSShape]:
+	def shapes(self) -> List[GSShape | GSPath | GSComponent]:
 		"""
 		`GSShape`物件的清單。這很可能是`GSPath`或`GSComponent`。
 		```			
-			# 取用所有形狀
-			for shape in layer.shapes:
-				print(shape)
-			# 刪除形狀
-			del layer.shapes[0]
-			# 從另一個圖層拷貝形狀
-			import copy
-			layer.shapes = copy.copy(anotherlayer.shapes)
+		# 取用所有形狀
+		for shape in layer.shapes:
+			print(shape)
+		# 刪除形狀
+		del layer.shapes[0]
+		# 從另一個圖層拷貝形狀
+		import copy
+		layer.shapes = copy.copy(anotherlayer.shapes)
 		"""
 	@shapes.setter
-	def shapes(self, value: List[GSShape]): ...
+	def shapes(self, value: List[GSShape | GSPath | GSComponent]): ...
 	@shapes.deleter
 	def shapes(self): ...
 
@@ -3380,9 +3464,9 @@ class GSLayer: # 類別
 		"""
 		`GSPath`物件的清單。這只是一個幫助代理，用於疊代所有路徑（不包括組件）。要新增/刪除項目，請使用`GSLayer.shapes`。
 		```			
-			# 取用所有路徑
-			for path in layer.paths:
-				print(path)
+		# 取用所有路徑
+		for path in layer.paths:
+			print(path)
 		"""
 	@property
 	def selection(self) -> List[Union[GSNode, GSAnchor, GSShape]]:
@@ -3391,12 +3475,12 @@ class GSLayer: # 類別
 
 		此清單包含所有選中的項目，包括節點、錨點、參考線等。如果要專門處理節點，則可能需要反覆走訪節點（或錨點等），並檢查它們是否被選中。參見下面的示例。
 		```			
-			# 取用所有選中的節點
-			for path in layer.paths:
-				for node in path.nodes: #（或path.anchors等）
-					print(node.selected)
-			# 清除選擇
-			layer.clearSelection()
+		# 取用所有選中的節點
+		for path in layer.paths:
+			for node in path.nodes: #（或path.anchors等）
+				print(node.selected)
+		# 清除選擇
+		layer.clearSelection()
 		"""
 	@selection.setter
 	def selection(self, value: List[Union[GSNode, GSAnchor, GSShape]]): ...
@@ -3522,10 +3606,10 @@ class GSLayer: # 類別
 		"""
 		整個字符的NSRect邊界框（唯讀）
 		```			
-			# 原點
-			print(layer.bounds.origin.x, layer.bounds.origin.y)
-			# 尺寸
-			print(layer.bounds.size.width, layer.bounds.size.height)
+		# 原點
+		print(layer.bounds.origin.x, layer.bounds.origin.y)
+		# 尺寸
+		print(layer.bounds.size.width, layer.bounds.size.height)
 		"""
 	@property
 	def selectionBounds(self) -> 'NSRect':
@@ -3619,9 +3703,9 @@ class GSLayer: # 類別
 		"""
 		作為NSBezierPath物件的圖層的所有開放路徑，包括組件的路徑。用於在插件中繪製字符的輪廓。
 		```			
-			# 將路徑繪製到編輯畫面中
-			NSColor.redColor().set()
-			layer.completeOpenBezierPath.stroke()
+		# 將路徑繪製到編輯畫面中
+		NSColor.redColor().set()
+		layer.completeOpenBezierPath.stroke()
 		"""
 	@completeOpenBezierPath.setter
 	def completeOpenBezierPath(self, value: NSBezierPath): ...
@@ -3667,10 +3751,10 @@ class GSLayer: # 類別
 		"""
 		用於儲存用戶資料的字典。使用不重複鍵，僅使用可以儲存在屬性列表中的物件（字符串，列表，字典，數字，NSData），否則資料將無法從儲存的檔案中恢復。
 		```			
-			# 設定值
-			layer.userData['rememberToMakeCoffee'] = True
-			# 刪除值
-			del layer.userData['rememberToMakeCoffee']
+		# 設定值
+		layer.userData['rememberToMakeCoffee'] = True
+		# 刪除值
+		del layer.userData['rememberToMakeCoffee']
 		"""
 	@userData.setter
 	def userData(self, value: Dict[str, Union[bool, str, List, Dict, float, bytes]]): ...
@@ -3682,10 +3766,10 @@ class GSLayer: # 類別
 		"""
 		用於暫存資料的字典。使用不重複鍵。此資料不會儲存在檔案中。如果需要持續資料，請使用`layer.userData`
 		```			
-			# 設定值
-			layer.tempData['rememberToMakeCoffee'] = True
-			# 刪除值
-			del layer.tempData['rememberToMakeCoffee']
+		# 設定值
+		layer.tempData['rememberToMakeCoffee'] = True
+		# 刪除值
+		del layer.tempData['rememberToMakeCoffee']
 		"""
 	@tempData.setter
 	def tempData(self, value: Dict[str, Union[bool, str, List, Dict, float, bytes]]): ...
@@ -3693,30 +3777,30 @@ class GSLayer: # 類別
 	def tempData(self): ...
 
 	@property
-	def smartComponentPoleMapping(self) -> Dict[str, int]: 
+	def smartComponentPoleMapping(self) -> Dict[GSSmartComponentAxis, int]: 
 		"""
 		將此圖層對應到智慧字符的內插軸極。字典鍵是`GSSmartComponentAxis`物件的名稱。值為1表示底部極，值為2表示頂部極。對應於字符的“智慧字符設定選項”對話框的“圖層”分頁。
 		參見 https://glyphsapp.com/tutorials/smart-components 。
 		```			
-			# 將圖層對應到頂部和底部極
-			crotchDepthAxis = glyph.smartComponentAxes['crotchDepth']
-			shoulderWidthAxis = glyph.smartComponentAxes['shoulderWidth']
-			for layer in glyph.layers:
-				# 一般圖層
-				if layer.name == 'Regular':
-					layer.smartComponentPoleMapping[crotchDepthAxis.id] = 2
-					layer.smartComponentPoleMapping[shoulderWidthAxis.id] = 2
-				# 窄圖層
-				elif layer.name == 'NarrowShoulder':
-					layer.smartComponentPoleMapping[crotchDepthAxis.id] = 2
-					layer.smartComponentPoleMapping[shoulderWidthAxis.id] = 1
-				# 扁圖層
-				elif layer.name == 'LowCrotch':
-					layer.smartComponentPoleMapping[crotchDepthAxis.id] = 1
-					layer.smartComponentPoleMapping[shoulderWidthAxis.id] = 2
+		# 將圖層對應到頂部和底部極
+		crotchDepthAxis = glyph.smartComponentAxes['crotchDepth']
+		shoulderWidthAxis = glyph.smartComponentAxes['shoulderWidth']
+		for layer in glyph.layers:
+			# 一般圖層
+			if layer.name == 'Regular':
+				layer.smartComponentPoleMapping[crotchDepthAxis.id] = 2
+				layer.smartComponentPoleMapping[shoulderWidthAxis.id] = 2
+			# 窄圖層
+			elif layer.name == 'NarrowShoulder':
+				layer.smartComponentPoleMapping[crotchDepthAxis.id] = 2
+				layer.smartComponentPoleMapping[shoulderWidthAxis.id] = 1
+			# 扁圖層
+			elif layer.name == 'LowCrotch':
+				layer.smartComponentPoleMapping[crotchDepthAxis.id] = 1
+				layer.smartComponentPoleMapping[shoulderWidthAxis.id] = 2
 		"""
 	@smartComponentPoleMapping.setter
-	def smartComponentPoleMapping(self, value: Dict[str, int]):...
+	def smartComponentPoleMapping(self, value: Dict[GSSmartComponentAxis, int]):...
 	#endregion
 	#region 函數(Functions)
 	
@@ -3734,8 +3818,8 @@ class GSLayer: # 類別
 		"""
 		回傳表示字符輪廓結構的字串，用於相容性比較。
 		```			
-			print(layer.compareString())
-			>> oocoocoocoocooc_oocoocoocloocoocoocoocoocoocoocoocooc_
+		print(layer.compareString())
+		>> oocoocoocoocooc_oocoocoocloocoocoocoocoocoocoocoocooc_
 		"""
 
 	def connectAllOpenPaths(self):
@@ -3751,9 +3835,9 @@ class GSLayer: # 類別
 		"""
 		從連接的字符接管LSB和RSB。
 		```			
-			# 同步此字符所有圖層的度量
-			for layer in glyph.layers:
-				layer.syncMetrics()
+		# 同步此字符所有圖層的度量
+		for layer in glyph.layers:
+			layer.syncMetrics()
 		"""
 	def correctPathDirection(self):
 		"""
@@ -3783,21 +3867,21 @@ class GSLayer: # 類別
 		對圖層應用的變形矩陣。
 
 		```			
-			layer.applyTransform([
-				0.5, # x 縮放因素向量
-				0.0, # x 傾斜因素向量
-				0.0, # y 縮放因素向量
-				0.5, # y 傾斜因素向量
-				0.0, # x 位置
-				0.0  # y 位置
-			])
-			from Foundation import NSAffineTransform, NSMidX, NSMidY
-			bounds = Layer.bounds
-			transform = NSAffineTransform.new()
-			transform.translateXBy_yBy_(NSMidX(bounds), NSMidY(bounds))
-			transform.rotateByDegrees_(-30)
-			transform.translateXBy_yBy_(-NSMidX(bounds), -NSMidY(bounds))
-			Layer.applyTransform(transform)
+		layer.applyTransform([
+			0.5, # x 縮放因素向量
+			0.0, # x 傾斜因素向量
+			0.0, # y 縮放因素向量
+			0.5, # y 傾斜因素向量
+			0.0, # x 位置
+			0.0  # y 位置
+		])
+		from Foundation import NSAffineTransform, NSMidX, NSMidY
+		bounds = Layer.bounds
+		transform = NSAffineTransform.new()
+		transform.translateXBy_yBy_(NSMidX(bounds), NSMidY(bounds))
+		transform.rotateByDegrees_(-30)
+		transform.translateXBy_yBy_(-NSMidX(bounds), -NSMidY(bounds))
+		Layer.applyTransform(transform)
 		
 		參數：
 		- transform – 一個包含6個數字的列表，一個 NSAffineTransform 或一個 NSAffineTransformStruct
@@ -3831,8 +3915,8 @@ class GSLayer: # 類別
 		"""
 		在點1和點2之間切割所有路徑
 		```			
-			# 在y=100處水平切割字符
-			layer.cutBetweenPoints(NSPoint(0, 100), NSPoint(layer.width, 100))
+		# 在y=100處水平切割字符
+		layer.cutBetweenPoints(NSPoint(0, 100), NSPoint(layer.width, 100))
 		"""
 	def intersections(self) -> 'list':
 		"""
@@ -3850,13 +3934,13 @@ class GSLayer: # 類別
 
 		通常，第一個回傳的點是起點，最後一個回傳的點是終點。因此，第二個點是第一個交點，倒數第二個點是最後一個交點。
 		```			
-			# 顯示y=100處的所有交點
-			intersections = layer.intersectionsBetweenPoints((-1000, 100), (layer.width+1000, 100))
-			print(intersections)
-			# 測量線的左側附距
-			print(intersections[1].x)
-			# 測量線的右側附距
-			print(layer.width - intersections[-2].x)
+		# 顯示y=100處的所有交點
+		intersections = layer.intersectionsBetweenPoints((-1000, 100), (layer.width+1000, 100))
+		print(intersections)
+		# 測量線的左側附距
+		print(intersections[1].x)
+		# 測量線的右側附距
+		print(layer.width - intersections[-2].x)
 		"""
 
 	def addMissingAnchors(self):
@@ -3883,7 +3967,7 @@ class GSLayer: # 類別
 		"""
 	#endregion
 		
-class GSAnchor: # 類別
+class GSAnchor(GSLayer): # 類別
 	"""
 	錨點物件的實作。
 
@@ -3895,6 +3979,7 @@ class GSAnchor: # 類別
 		- name – 錨點的名稱
 		- pt – 錨點的位置
 		"""
+		self.position = NSPoint()
 
 	#region 屬性(Properties)
 	@property
@@ -3902,12 +3987,12 @@ class GSAnchor: # 類別
 		"""
 		錨點的位置
 		```			
-			# 讀取位置
-			print(layer.anchors['top'].position.x, layer.anchors['top'].position.y)
-			# 設定位置
-			layer.anchors['top'].position = NSPoint(175, 575)
-			# 增加50個單位的垂直位置
-			layer.anchors['top'].position = NSPoint(layer.anchors['top'].position.x, layer.anchors['top'].position.y + 50)
+		# 讀取位置
+		print(layer.anchors['top'].position.x, layer.anchors['top'].position.y)
+		# 設定位置
+		layer.anchors['top'].position = NSPoint(175, 575)
+		# 增加50個單位的垂直位置
+		layer.anchors['top'].position = NSPoint(layer.anchors['top'].position.x, layer.anchors['top'].position.y + 50)
 		"""
 	@position.setter
 	def position(self, value: NSPoint): ...
@@ -3925,10 +4010,10 @@ class GSAnchor: # 類別
 		"""
 		UI中的錨點選擇狀態。
 		```			
-			# 選擇錨點
-			layer.anchors[0].selected = True
-			# 記錄選擇狀態
-			print(layer.anchors[0].selected)
+		# 選擇錨點
+		layer.anchors[0].selected = True
+		# 記錄選擇狀態
+		print(layer.anchors[0].selected)
 		"""
 	@selected.setter
 	def selected(self, value: bool): ...
@@ -3946,10 +4031,10 @@ class GSAnchor: # 類別
 		"""
 		用於儲存用戶資料的字典。使用不重複鍵，僅使用可以儲存在屬性列表中的物件（字符串，列表，字典，數字，NSData），否則資料將無法從儲存的檔案中恢復。
 		```			
-			# 設定值
-			anchor.userData['rememberToMakeCoffee'] = True
-			# 刪除值
-			del component.userData['rememberToMakeCoffee']
+		# 設定值
+		anchor.userData['rememberToMakeCoffee'] = True
+		# 刪除值
+		del component.userData['rememberToMakeCoffee']
 
 		3.0版新增
 		"""
@@ -3959,7 +4044,7 @@ class GSAnchor: # 類別
 	def userData(self): ...
 	#endregion
 
-class GSComponent: # 類別
+class GSComponent(GSLayer): # 類別
 	"""
 	組件物件的實作。
 
@@ -3971,6 +4056,13 @@ class GSComponent: # 類別
 		- glyph – 一個`GSGlyph`物件或字符名稱
 		- position – 組件的位置為`NSPoint`
 		"""
+		self.position = NSPoint()
+		self.component = GSGlyph()
+		self.componentLayer = GSLayer()
+		self.transform = NSAffineTransformStruct()
+		self.bounds = NSRect()
+		self.bezierPath = NSBezierPath()
+		
 	#region 屬性(Properties)
 	@property
 	def position(self) -> 'NSPoint':
@@ -4046,14 +4138,14 @@ class GSComponent: # 類別
 		組件的變換矩陣。如果是Glyphs 3，則從縮放、旋轉和位置計算。
 
 		```			
-			component.transform = ((
-				0.5, # x 縮放因子
-				0.0, # x 傾斜因子
-				0.0, # y 傾斜因子
-				0.5, # y 縮放因子
-				0.0, # x 位置
-				0.0  # y 位置
-			))
+		component.transform = ((
+			0.5, # x 縮放因子
+			0.0, # x 傾斜因子
+			0.0, # y 傾斜因子
+			0.5, # y 縮放因子
+			0.0, # x 位置
+			0.0  # y 位置
+		))
 		"""
 	@transform.setter
 	def transform(self, value: 'NSAffineTransformStruct'): ...
@@ -4063,11 +4155,11 @@ class GSComponent: # 類別
 		"""
 		組件的邊界框（唯讀）
 		```			
-			component = layer.components[0] # 第一個組件
-			# 原點
-			print(component.bounds.origin.x, component.bounds.origin.y)
-			# 尺寸
-			print(component.bounds.size.width, component.bounds.size.height)
+		component = layer.components[0] # 第一個組件
+		# 原點
+		print(component.bounds.origin.x, component.bounds.origin.y)
+		# 尺寸
+		print(component.bounds.size.width, component.bounds.size.height)
 		"""
 	@property
 	def automaticAlignment(self) -> 'bool':
@@ -4112,10 +4204,10 @@ class GSComponent: # 類別
 		"""
 		UI中的組件選擇狀態。
 		```			
-			# 選擇組件
-			layer.components[0].selected = True
-			# 記錄選擇狀態
-			print(layer.components[0].selected)
+		# 選擇組件
+		layer.components[0].selected = True
+		# 記錄選擇狀態
+		print(layer.components[0].selected)
 		"""
 	@selected.setter
 	def selected(self, value: 'bool'): ...
@@ -4125,8 +4217,8 @@ class GSComponent: # 類別
 		"""
 		組件的屬性，如`mask`或`reversePaths`。
 		```			
-			component.attributes['mask'] = True
-			component.attributes['reversePaths'] = True
+		component.attributes['mask'] = True
+		component.attributes['reversePaths'] = True
 		"""
 	@attributes.setter
 	def attributes(self, value: 'dict'): ...
@@ -4140,13 +4232,13 @@ class GSComponent: # 類別
 
 		參見 https://glyphsapp.com/tutorials/smart-components 以供參考。
 		```			
-			component = glyph.layers[0].shapes[1]
-			widthAxis = component.component.smartComponentAxes['Width']
-			components.smartComponentValues[widthAxis.id] = 45
-			# 檢查組件是否是智慧組件
-			for component in layer.components:
-				if component.smartComponentValues is not None:
-					# 做一些事情
+		component = glyph.layers[0].shapes[1]
+		widthAxis = component.component.smartComponentAxes['Width']
+		components.smartComponentValues[widthAxis.id] = 45
+		# 檢查組件是否是智慧組件
+		for component in layer.components:
+			if component.smartComponentValues is not None:
+				# 做一些事情
 		"""
 	@smartComponentValues.setter
 	def smartComponentValues(self, value: Union[Dict[str, int], int, None]): ...
@@ -4158,9 +4250,9 @@ class GSComponent: # 類別
 		"""
 		作為NSBezierPath物件的組件。用於在插件中繪製字符。
 		```			
-			# 將路徑繪製到編輯畫面中
-			NSColor.redColor().set()
-			layer.components[0].bezierPath.fill()
+		# 將路徑繪製到編輯畫面中
+		NSColor.redColor().set()
+		layer.components[0].bezierPath.fill()
 		"""
 	@bezierPath.setter
 	def bezierPath(self, value: NSBezierPath): ...
@@ -4172,10 +4264,10 @@ class GSComponent: # 類別
 		"""
 		用於儲存用戶資料的字典。使用不重複鍵，僅使用可以儲存在屬性列表中的物件（字符串，列表，字典，數字，NSData），否則資料將無法從儲存的檔案中恢復。
 		```			
-			# 設定值
-			component.userData['rememberToMakeCoffee'] = True
-			# 刪除值
-			del component.userData['rememberToMakeCoffee']
+		# 設定值
+		component.userData['rememberToMakeCoffee'] = True
+		# 刪除值
+		del component.userData['rememberToMakeCoffee']
 
 		2.5版新增
 		"""
@@ -4189,10 +4281,10 @@ class GSComponent: # 類別
 		"""
 		用於暫存資料的字典。使用不重複鍵。此資料不會儲存在檔案中。如果需要持續資料，請使用`component.userData`
 		```			
-			# 設定值
-			component.tempData['rememberToMakeCoffee'] = True
-			# 刪除值
-			del component.tempData['rememberToMakeCoffee']
+		# 設定值
+		component.tempData['rememberToMakeCoffee'] = True
+		# 刪除值
+		del component.tempData['rememberToMakeCoffee']
 		"""
 	@tempData.setter
 	def tempData(self, value: Dict[str, Union[bool, str, List, Dict, float, bytes]]): ...
@@ -4217,23 +4309,26 @@ class GSComponent: # 類別
 		對組件應用變形矩陣。
 
 		```			
-			component.applyTransform((
-				0.5, # x 縮放因子
-				0.0, # x 傾斜因子
-				0.0, # y 傾斜因子
-				0.5, # y 縮放因子
-				0.0, # x 位置
-				0.0  # y 位置
-			))
+		component.applyTransform((
+			0.5, # x 縮放因子
+			0.0, # x 傾斜因子
+			0.0, # y 傾斜因子
+			0.5, # y 縮放因子
+			0.0, # x 位置
+			0.0  # y 位置
+		))
 		"""
 	#endregion
 
-class GSGlyphReference: # 類別
+class GSGlyphReference(GSFont): # 類別
 	"""
 	一個小幫手類別用於在userData中儲存對字符的參考，將追踪字符名稱的變化。
 
 	3.0.4版新增
 	"""
+	def __init__(self):
+		self.glyph = GSGlyph()
+
 	#region 屬性(Properties)
 	@property
 	def glyph(self) -> 'GSGlyph':
@@ -4249,7 +4344,7 @@ class GSGlyphReference: # 類別
 
 	#endregion
 		
-class GSSmartComponentAxis: # 類別
+class GSSmartComponentAxis(GSGlyph): # 類別
 	"""
 	智慧組件內插軸物件的實作。
 
@@ -4289,7 +4384,7 @@ class GSSmartComponentAxis: # 類別
 
 	#endregion
 		
-class GSShape: # 類別
+class GSShape(GSLayer): # 類別
 	"""
 	形狀物件的實作。
 
@@ -4313,7 +4408,7 @@ class GSShape: # 類別
 		"""
 	#endregion
 		
-class GSPath: # 類別
+class GSPath(GSLayer): # 類別
 	"""
 	路徑物件的實作。
 
@@ -4321,6 +4416,11 @@ class GSPath: # 類別
 
 	如果在程式碼中建立路徑，請確保結構是有效的。曲線節點必須由兩個離線節點前置。開放路徑必須以線節點開始。
 	"""
+	def __init__(self):
+		self.parent = GSLayer()
+		self.bounds = NSRect()
+		self.bezierPath = NSBezierPath()
+
 	#region 屬性(Properties)
 	@property
 	def parent(self) -> 'GSLayer':
@@ -4333,10 +4433,10 @@ class GSPath: # 類別
 		"""
 		一個`GSNode`物件的清單
 		```			
-			# 取用所有節點
-			for path in layer.paths:
-				for node in path.nodes:
-					print(node)
+		# 取用所有節點
+		for path in layer.paths:
+			for node in path.nodes:
+				print(node)
 		"""
 	@nodes.setter
 	def nodes(self, value: 'list'): ...
@@ -4347,10 +4447,10 @@ class GSPath: # 類別
 		一個`NSPoint`物件的清單。兩個物件代表一條線，四個代表一個曲線。包含線段的起點。
 
 		```			
-			# 取用所有段
-			for path in layer.paths:
-				for segment in path.segments:
-					print(segment)
+		# 取用所有段
+		for path in layer.paths:
+			for segment in path.segments:
+				print(segment)
 		"""
 	@segments.setter
 	def segments(self, value: 'list'): ...
@@ -4377,21 +4477,21 @@ class GSPath: # 類別
 		路徑的邊界框（唯讀）
 
 		```			
-			path = layer.paths[0] # 第一條路徑
-			# 原點
-			print(path.bounds.origin.x, path.bounds.origin.y)
-			# 尺寸
-			print(path.bounds.size.width, path.bounds.size.height)
+		path = layer.paths[0] # 第一條路徑
+		# 原點
+		print(path.bounds.origin.x, path.bounds.origin.y)
+		# 尺寸
+		print(path.bounds.size.width, path.bounds.size.height)
 		"""
 	@property
 	def selected(self) -> 'bool':
 		"""
 		UI 中的路徑選擇狀態。
 		```			
-			# 選擇路徑
-			layer.paths[0].selected = True
-			# 記錄選擇狀態
-			print(layer.paths[0].selected)
+		# 選擇路徑
+		layer.paths[0].selected = True
+		# 記錄選擇狀態
+		print(layer.paths[0].selected)
 		"""
 	@selected.setter
 	def selected(self, value: 'bool'): ...
@@ -4401,9 +4501,9 @@ class GSPath: # 類別
 		"""
 		作為NSBezierPath物件的相同路徑。用於在插件中繪製字符。
 		```			
-			# 將路徑繪製到編輯畫面中
-			NSColor.redColor().set()
-			layer.paths[0].bezierPath.fill()
+		# 將路徑繪製到編輯畫面中
+		NSColor.redColor().set()
+		layer.paths[0].bezierPath.fill()
 		"""
 	@bezierPath.setter
 	def bezierPath(self, value: 'NSBezierPath'): ...
@@ -4415,15 +4515,15 @@ class GSPath: # 類別
 		"""
 		路徑屬性，如`fill`、`mask`、`strokeWidth`、`strokeHeight`、`strokeColor`和`strokePos`
 		```			
-			# 在黑白圖層中:
-			path.attributes['fill'] = True
-			path.attributes['mask'] = True
-			path.attributes['strokeWidth'] = 100
-			path.attributes['strokeHeight'] = 80
-			# 在彩色圖層中:
-			path.attributes['strokeColor'] = NSColor.redColor()
-			path.attributes['fillColor'] = NSColor.blueColor()
-			path.attributes['strokePos'] = 1
+		# 在黑白圖層中:
+		path.attributes['fill'] = True
+		path.attributes['mask'] = True
+		path.attributes['strokeWidth'] = 100
+		path.attributes['strokeHeight'] = 80
+		# 在彩色圖層中:
+		path.attributes['strokeColor'] = NSColor.redColor()
+		path.attributes['fillColor'] = NSColor.blueColor()
+		path.attributes['strokePos'] = 1
 		"""
 	@attributes.setter
 	def attributes(self, value: 'dict'): ...
@@ -4433,10 +4533,10 @@ class GSPath: # 類別
 		"""
 		用於暫存資料的字典。使用不重複鍵。此資料不會儲存在檔案中。如果需要持續資料，請使用`path.userData`
 		```			
-			# 設定值
-			path.tempData['rememberToMakeCoffee'] = True
-			# 刪除值
-			del path.tempData['rememberToMakeCoffee']
+		# 設定值
+		path.tempData['rememberToMakeCoffee'] = True
+		# 刪除值
+		del path.tempData['rememberToMakeCoffee']
 		"""
 	@tempData.setter
 	def tempData(self, value: Dict[str, Union[bool, str, List, Dict, float, bytes]]): ...
@@ -4465,19 +4565,19 @@ class GSPath: # 類別
 		"""
 		對路徑應用變形矩陣。
 		```			
-			path = layer.paths[0]
-			path.applyTransform((
-				0.5, # x 縮放因子
-				0.0, # x 傾斜因子
-				0.0, # y 傾斜因子
-				0.5, # y 縮放因子
-				0.0, # x 位置
-				0.0  # y 位置
-			))
+		path = layer.paths[0]
+		path.applyTransform((
+			0.5, # x 縮放因子
+			0.0, # x 傾斜因子
+			0.0, # y 傾斜因子
+			0.5, # y 縮放因子
+			0.0, # x 位置
+			0.0  # y 位置
+		))
 		"""
 	#endregion
 		
-class GSNode: # 類別
+class GSNode(GSPath): # 類別
 	"""
 	節點物件的實作。
 
@@ -4492,6 +4592,10 @@ class GSNode: # 類別
 		- pt – 節點的位置
 		- type – 節點的類型，LINE、CURVE或OFFCURVE
 		"""
+		self.position = NSPoint()
+		self.nextNode = GSNode()
+		self.prevNode = GSNode()
+
 	#region 屬性(Properties)
 	@property
 	def position(self) -> 'NSPoint':
@@ -4532,10 +4636,10 @@ class GSNode: # 類別
 		"""
 		UI 中的節點選擇狀態。
 		```			
-			# 選擇節點
-			layer.paths[0].nodes[0].selected = True
-			# 記錄選擇狀態
-			print(layer.paths[0].nodes[0].selected)
+		# 選擇節點
+		layer.paths[0].nodes[0].selected = True
+		# 記錄選擇狀態
+		print(layer.paths[0].nodes[0].selected)
 		"""
 	@selected.setter
 	def selected(self, value: 'bool'): ...
@@ -4555,11 +4659,11 @@ class GSNode: # 類別
 
 		如果需要考慮節點在路徑中的位置，請使用節點的索引屬性並將其與路徑長度進行比較。
 		```			
-			print(layer.paths[0].nodes[0].nextNode # 回傳路徑中的第二個節點（索引0 + 1))
-			print(layer.paths[0].nodes[-1].nextNode # 回傳路徑中的第一個節點（最後一個節點>>跳到路徑開頭))
-			# 檢查節點是否是路徑中的最後一個節點（至少有兩個節點）
-			print(layer.paths[0].nodes[0].index == (len(layer.paths[0].nodes) - 1)) # 對第一個節點回傳False
-			print(layer.paths[0].nodes[-1].index == (len(layer.paths[0].nodes) - 1)) # 對最後一個節點回傳True
+		print(layer.paths[0].nodes[0].nextNode # 回傳路徑中的第二個節點（索引0 + 1))
+		print(layer.paths[0].nodes[-1].nextNode # 回傳路徑中的第一個節點（最後一個節點>>跳到路徑開頭))
+		# 檢查節點是否是路徑中的最後一個節點（至少有兩個節點）
+		print(layer.paths[0].nodes[0].index == (len(layer.paths[0].nodes) - 1)) # 對第一個節點回傳False
+		print(layer.paths[0].nodes[-1].index == (len(layer.paths[0].nodes) - 1)) # 對最後一個節點回傳True
 		"""
 
 	@property
@@ -4571,11 +4675,11 @@ class GSNode: # 類別
 
 		如果需要考慮節點在路徑中的位置，請使用節點的索引屬性並將其與路徑長度進行比較。
 		```			
-			print(layer.paths[0].nodes[0].prevNode) # 回傳路徑中的最後一個節點（第一個節點>>跳到路徑結尾))
-			print(layer.paths[0].nodes[-1].prevNode) # 回傳路徑中的倒數第二個節點
-			# 檢查節點是否是路徑中的第一個節點（至少有兩個節點）
-			print(layer.paths[0].nodes[0].index == 0) # 對第一個節點回傳True
-			print(layer.paths[0].nodes[-1].index == 0) # 對最後一個節點回傳False
+		print(layer.paths[0].nodes[0].prevNode) # 回傳路徑中的最後一個節點（第一個節點>>跳到路徑結尾))
+		print(layer.paths[0].nodes[-1].prevNode) # 回傳路徑中的倒數第二個節點
+		# 檢查節點是否是路徑中的第一個節點（至少有兩個節點）
+		print(layer.paths[0].nodes[0].index == 0) # 對第一個節點回傳True
+		print(layer.paths[0].nodes[-1].index == 0) # 對最後一個節點回傳False
 		"""
 
 	@property
@@ -4599,10 +4703,10 @@ class GSNode: # 類別
 		"""
 		用於儲存用戶資料的字典。使用不重複鍵，僅使用可以儲存在屬性列表中的物件（字符串，列表，字典，數字，NSData），否則資料將無法從儲存的檔案中恢復。
 		```			
-			# 設定值
-			node.userData['rememberToMakeCoffee'] = True
-			# 刪除值
-			del node.userData['rememberToMakeCoffee']
+		# 設定值
+		node.userData['rememberToMakeCoffee'] = True
+		# 刪除值
+		del node.userData['rememberToMakeCoffee']
 
 		2.4.1版新增
 		"""
@@ -4623,22 +4727,24 @@ class GSNode: # 類別
 		"""
 	#endregion
 		
-class GSPathSegment: # 類別
+class GSPathSegment(GSPath): # 類別
 	"""
 	線段物件的實作。
 
 	有關如何取用它們的詳細訊息，請查看`GSPath.segments`
 	"""
+	def __init__(self):
+		self.bounds = NSRect()
 	#region 屬性(Properties)
 	@property
 	def bounds(self) -> 'NSRect':
 		"""
 		線段的邊界框作為 NSRect（唯讀）
 		```			
-			# 原點
-			print(bounds.origin.x, bounds.origin.y)
-			# 尺寸
-			print(bounds.size.width, bounds.size.height)
+		# 原點
+		print(bounds.origin.x, bounds.origin.y)
+		# 尺寸
+		print(bounds.size.width, bounds.size.height)
 		"""
 	@property
 	def type(self) -> 'str':
@@ -4698,7 +4804,7 @@ class GSPathSegment: # 類別
 		"""
 	#endregion
 
-class GSGuide: # 類別
+class GSGuide(GSLayer): # 類別
 	"""
 	參考線物件的實作。
 
@@ -4738,10 +4844,10 @@ class GSGuide: # 類別
 		"""
 		UI 中的參考線選取狀態。
 		```			
-			# 選取參考線
-			layer.guides[0].selected = True
-			# 記錄選取狀態
-			print(layer.guides[0].selected)
+		# 選取參考線
+		layer.guides[0].selected = True
+		# 記錄選取狀態
+		print(layer.guides[0].selected)
 		"""
 	@selected.setter
 	def selected(self, value: 'bool'): ...
@@ -4779,10 +4885,10 @@ class GSGuide: # 類別
 		"""
 		用於儲存用戶資料的字典。使用不重複鍵，僅使用可以儲存在屬性列表中的物件（字符串，列表，字典，數字，NSData），否則資料將無法從儲存的檔案中恢復。
 		```			
-			# 設定值
-			guide.userData['rememberToMakeCoffee'] = True
-			# 刪除值
-			del guide.userData['rememberToMakeCoffee']
+		# 設定值
+		guide.userData['rememberToMakeCoffee'] = True
+		# 刪除值
+		del guide.userData['rememberToMakeCoffee']
 		"""
 	@userData.setter
 	def userData(self, value: Dict[str, Union[bool, str, List, Dict, float, bytes]]): ...
@@ -4791,12 +4897,15 @@ class GSGuide: # 類別
 
 	#endregion
 
-class GSAnnotation: # 類別
+class GSAnnotation(GSLayer): # 類別
 	"""
 	註解物件的實作。
 
 	有關如何取用它們的詳細訊息，請查看`GSLayer.annotations`
 	"""
+	def __init__(self): 
+		self.position = NSPoint()
+
 	#region 屬性(Properties)
 	@property
 	def position(self) -> 'NSPoint':
@@ -4845,12 +4954,23 @@ class GSAnnotation: # 類別
 	def width(self, value: 'float'): ...
 	#endregion
 
-class GSHint: # 類別
+class GSHint(GSLayer): # 類別
 	"""
 	Hint物件的實作。
 
 	有關如何取用它們的詳細訊息，請查看`GSLayer.hints`
 	"""
+	def __init__(self):
+		self.parent = GSLayer()
+		self.originNode = [GSNode(), GSHandle()]
+		self.targetNode = [GSNode(), GSHandle()]
+		self.otherNode1 = [GSNode(), GSHandle()]
+		self.otherNode2 = [GSNode(), GSHandle()]
+		self.originIndex = NSIndexPath()
+		self.targetIndex = NSIndexPath()
+		self.otherIndex1 = NSIndexPath()
+		self.otherIndex2 = NSIndexPath()
+
 	#region 屬性(Properties)
 	@property
 	def parent(self) -> 'GSLayer':
@@ -4944,10 +5064,10 @@ class GSHint: # 類別
 		"""
 		UI 中的Hint選取狀態。
 		```			
-			# 選取Hint
-			layer.hints[0].selected = True
-			# 記錄選取狀態
-			print(layer.hints[0].selected)
+		# 選取Hint
+		layer.hints[0].selected = True
+		# 記錄選取狀態
+		print(layer.hints[0].selected)
 		"""
 	@selected.setter
 	def selected(self, value: 'bool'): ...
@@ -5003,10 +5123,10 @@ class GSHint: # 類別
 		"""
 		用於暫存資料的字典。使用不重複鍵。此資料不會儲存在檔案中。如果需要持續資料，請使用`hint.userData`
 		```			
-			# 設定值
-			hint.tempData['rememberToMakeCoffee'] = True
-			# 刪除值
-			del hint.tempData['rememberToMakeCoffee']
+		# 設定值
+		hint.tempData['rememberToMakeCoffee'] = True
+		# 刪除值
+		del hint.tempData['rememberToMakeCoffee']
 		"""
 	@tempData.setter
 	def tempData(self, value: Dict[str, Union[bool, str, List, Dict, float, bytes]]): ...
@@ -5015,7 +5135,7 @@ class GSHint: # 類別
 
 	#endregion
 		
-class GSBackgroundImage: # 類別
+class GSBackgroundImage(GSLayer): # 類別
 	"""
 	背景圖片的實作。
 
@@ -5028,6 +5148,11 @@ class GSBackgroundImage: # 類別
 		參數：
 		- path – 初始化為圖片檔案（選擇性）
 		"""
+		self.image = NSImage()
+		self.crop = NSRect()
+		self.position = NSPoint()
+		self.transform = NSAffineTransformStruct()
+
 	#region 屬性(Properties)
 	@property
 	def path(self) -> 'str':
@@ -5047,8 +5172,8 @@ class GSBackgroundImage: # 類別
 		"""
 		裁切矩形。這是相對於圖片大小的像素，而不是字型的em單位（以防圖片被縮放到100%以外的其他尺寸）。
 		```			
-			# 更改裁切
-			layer.backgroundImage.crop = NSRect(NSPoint(0, 0), NSPoint(1200, 1200))
+		# 更改裁切
+		layer.backgroundImage.crop = NSRect(NSPoint(0, 0), NSPoint(1200, 1200))
 		"""
 	@crop.setter
 	def crop(self, value: 'NSRect'): ...
@@ -5077,8 +5202,8 @@ class GSBackgroundImage: # 類別
 		"""
 		圖片的位置，以字型單位為單位。
 		```			
-			# 更改位置
-			layer.backgroundImage.position = NSPoint(50, 50)
+		# 更改位置
+		layer.backgroundImage.position = NSPoint(50, 50)
 		"""
 	@position.setter
 	def position(self, value: 'NSPoint'): ...
@@ -5092,9 +5217,9 @@ class GSBackgroundImage: # 類別
 
 		使用整數或浮點值同時設定 x 和 y 縮放因子。對於複數的縮放因子，請使用元組。
 		```			
-			# 更改縮放
-			layer.backgroundImage.scale = 1.2 # 將 x 和 y 變為 120%
-			layer.backgroundImage.scale = (1.1, 1.2) # 將 x 變為110%，y 變為 120%
+		# 更改縮放
+		layer.backgroundImage.scale = 1.2 # 將 x 和 y 變為 120%
+		layer.backgroundImage.scale = (1.1, 1.2) # 將 x 變為110%，y 變為 120%
 		"""
 	@scale.setter
 	def scale(self, value: 'tuple'): ...
@@ -5112,15 +5237,15 @@ class GSBackgroundImage: # 類別
 		"""
 		變形矩陣。
 		```			
-			# 變形更動
-			layer.backgroundImage.transform = ((
-				1.0, # x 縮放因子
-				0.0, # x 傾斜因子
-				0.0, # y 傾斜因子
-				1.0, # y 縮放因子
-				0.0, # x 位置
-				0.0  # y 位置
-			))
+		# 變形更動
+		layer.backgroundImage.transform = ((
+			1.0, # x 縮放因子
+			0.0, # x 傾斜因子
+			0.0, # y 傾斜因子
+			1.0, # y 縮放因子
+			0.0, # x 位置
+			0.0  # y 位置
+		))
 		"""
 	@transform.setter
 	def transform(self, value: 'NSAffineTransformStruct'): ...
@@ -5135,26 +5260,32 @@ class GSBackgroundImage: # 類別
 		"""
 		將圖片的裁切寬度縮放到特定的em單位值，保持其長寬比。
 		```			
-			# 將圖片適應到圖層的寬度
-			layer.backgroundImage.scaleWidthToEmUnits(layer.width)
+		# 將圖片適應到圖層的寬度
+		layer.backgroundImage.scaleWidthToEmUnits(layer.width)
 		"""
 	def scaleHeightToEmUnits(self):
 		"""
 		將圖片的裁切高度縮放到特定的em單位值，保持其長寬比。
 		```			
-			# 將圖片的原點位置設定在下伸線上
-			layer.backgroundImage.position = NSPoint(0, font.masters[0].descender)
-			# 將圖片縮放到UPM值
-			layer.backgroundImage.scaleHeightToEmUnits(font.upm)
+		# 將圖片的原點位置設定在下伸線上
+		layer.backgroundImage.position = NSPoint(0, font.masters[0].descender)
+		# 將圖片縮放到UPM值
+		layer.backgroundImage.scaleHeightToEmUnits(font.upm)
 		"""
 	#endregion
 
-class GSGradient: # 類別
+class GSGradient(GSLayer): # 類別
 	"""
 	漸層物件的實作。
 
 	有關如何取用它們的詳細訊息，請查看`GSLayer.gradients`
 	"""
+	def __init__(self):
+		self.colors = NSColor()
+		self.start = NSPoint()
+		self.end = NSPoint()
+		self.absoluteStart = NSPoint()
+		self.absoluteEnd = NSPoint()
 	#region 屬性(Properties)
 	@property
 	def colors(self) -> List[Tuple[NSColor, float]]:
@@ -5210,12 +5341,18 @@ class GSGradient: # 類別
 
 	#endregion
 
-class GSEditViewController: # 類別
+class GSEditViewController(GSFont): # 類別
 	"""
 	實作 GSEditViewController 物件，代表 UI 中的編輯分頁。
 
 	有關如何取用它們的詳細訊息，請查看`GSFont.tabs`
 	"""
+	def __init__(self):
+		self.parent = GSFont()
+		self.viewPort = NSRect()
+		self.bounds = NSRect()
+		self.selectedLayerOrigin = NSPoint()
+		self.previewInstances = GSInstance()
 	#region 屬性(Properties)
 	@property
 	def parent(self) -> 'GSFont':
@@ -5227,11 +5364,11 @@ class GSEditViewController: # 類別
 		"""
 		分頁的文本，可以是文本、斜線跳脫的字符名稱或兩者混合。OpenType 功能將在更改文本後套用。
 		```			
-			string = ""
-			for l in font.selectedLayers:
-				string += "/"+l.parent.name
-			tab = font.tabs[-1]
-			tab.text = string
+		string = ""
+		for l in font.selectedLayers:
+			string += "/"+l.parent.name
+		tab = font.tabs[-1]
+		tab.text = string
 		"""
 	@text.setter
 	def text(self, value: 'str'): ...
@@ -5241,12 +5378,12 @@ class GSEditViewController: # 類別
 		"""
 		分頁的基本底層字串
 		```			
-			string = ""
-			for l in font.selectedLayers:
-				char = font.characterForGlyph(l.parent)
-				string += chr(char)
-			tab = font.tabs[-1]
-			tab.text = string
+		string = ""
+		for l in font.selectedLayers:
+			char = font.characterForGlyph(l.parent)
+			string += chr(char)
+		tab = font.tabs[-1]
+		tab.text = string
 
 		3.2版新增
 		"""
@@ -5268,13 +5405,13 @@ class GSEditViewController: # 類別
 		"""
 		或許，您可以設定（和讀取）一個`GSLayer`物件列表。這些可以是字符的任何圖層。
 		```			
-			layers = []
-			# 將一個字符的所有圖層顯示在一起
-			for layer in font.glyphs['a'].layers:
-				layers.append(layer)
-			# 附加換行符
-			layers.append(GSControlLayer(10)) # 10是換行符的ASCII碼（\n）
-			font.tabs[0].layers = layers
+		layers = []
+		# 將一個字符的所有圖層顯示在一起
+		for layer in font.glyphs['a'].layers:
+			layers.append(layer)
+		# 附加換行符
+		layers.append(GSControlLayer(10)) # 10是換行符的ASCII碼（\n）
+		font.tabs[0].layers = layers
 		"""
 	@layers.setter
 	def layers(self, value: 'list'): ...
@@ -5297,13 +5434,13 @@ class GSEditViewController: # 類別
 
 		隨著編輯畫面的每個縮放步驟變化。因此，如果您想在編輯畫面中以與 UI 相對的恆定大小繪製對象（例如，螢幕上的恆定文本大小），您需要計算對象的大小相對於縮放因子。參見下面的示例。
 		```			
-			print(font.currentTab.scale)
-			>> 0.414628537193
-			# 計算文本大小
-			desiredTextSizeOnScreen = 10 #pt
-			scaleCorrectedTextSize = desiredTextSizeOnScreen / font.currentTab.scale
-			print(scaleCorrectedTextSize)
-			>> 24.1179733255
+		print(font.currentTab.scale)
+		>> 0.414628537193
+		# 計算文本大小
+		desiredTextSizeOnScreen = 10 #pt
+		scaleCorrectedTextSize = desiredTextSizeOnScreen / font.currentTab.scale
+		print(scaleCorrectedTextSize)
+		>> 24.1179733255
 		"""
 	@scale.setter
 	def scale(self, value: 'float'): ...
@@ -5319,19 +5456,19 @@ class GSEditViewController: # 類別
 
 		當使用繪製方法（例如 Reporter Plugin 中的畫面座標相對方法）時，請使用這些坐標。
 		```			
-			# 編輯畫面的四個角：
-			# 螢幕左下角
-			x = font.currentTab.viewPort.origin.x
-			y = font.currentTab.viewPort.origin.y
-			# 螢幕左上角
-			x = font.currentTab.viewPort.origin.x
-			y = font.currentTab.viewPort.origin.y + font.currentTab.viewPort.size.height
-			# 螢幕右上角
-			x = font.currentTab.viewPort.origin.x + font.currentTab.viewPort.size.width
-			y = font.currentTab.viewPort.origin.y + font.currentTab.viewPort.size.height
-			# 螢幕右下角
-			x = font.currentTab.viewPort.origin.x + font.currentTab.viewPort.size.width
-			y = font.currentTab.viewPort.origin.y
+		# 編輯畫面的四個角：
+		# 螢幕左下角
+		x = font.currentTab.viewPort.origin.x
+		y = font.currentTab.viewPort.origin.y
+		# 螢幕左上角
+		x = font.currentTab.viewPort.origin.x
+		y = font.currentTab.viewPort.origin.y + font.currentTab.viewPort.size.height
+		# 螢幕右上角
+		x = font.currentTab.viewPort.origin.x + font.currentTab.viewPort.size.width
+		y = font.currentTab.viewPort.origin.y + font.currentTab.viewPort.size.height
+		# 螢幕右下角
+		x = font.currentTab.viewPort.origin.x + font.currentTab.viewPort.size.width
+		y = font.currentTab.viewPort.origin.y
 		"""
 	@viewPort.setter
 	def viewPort(self, value: 'NSRect'): ...
@@ -5383,7 +5520,7 @@ class GSEditViewController: # 類別
 
 		參見`書寫方向`常數
 		```			
-			font.currentTab.direction = GSRTL
+		font.currentTab.direction = GSRTL
 		"""
 	@direction.setter
 	def direction(self, value: 'int'): 
@@ -5394,7 +5531,7 @@ class GSEditViewController: # 類別
 		"""
 		套用於編輯畫面中文本的 OpenType 特性列表。
 		```			
-			font.currentTab.features = ['locl', 'ss01']
+		font.currentTab.features = ['locl', 'ss01']
 		"""
 	@features.setter
 	def features(self, value: 'list'): ...
@@ -5404,10 +5541,10 @@ class GSEditViewController: # 類別
 		"""
 		用於暫存資料的字典。使用不重複鍵。這不會儲存在檔案中。如果需要持續資料，請使用`layer.userData`
 		```			
-			# 設定值
-			layer.tempData['rememberToMakeCoffee'] = True
-			# 刪除值
-			del layer.tempData['rememberToMakeCoffee']
+		# 設定值
+		layer.tempData['rememberToMakeCoffee'] = True
+		# 刪除值
+		del layer.tempData['rememberToMakeCoffee']
 		"""
 	@tempData.setter
 	def tempData(self, value: Dict[str, Union[bool, str, List, Dict, float, bytes]]): ...
@@ -5422,12 +5559,12 @@ class GSEditViewController: # 類別
 		值為`'live'`表示目前內容的即時預覽，`'all'`表示目前字符所有實體的內插，或個別的`GSInstance`物件。
 
 		```			
-			# 編輯畫面的即時預覽
-			font.currentTab.previewInstances = 'live'
-			# 在特定實體內插中顯示編輯畫面的文本
-			font.currentTab.previewInstances = font.GSInstance[-1]
-			# 所有實體的內插
-			font.currentTab.previewInstances = 'all'
+		# 編輯畫面的即時預覽
+		font.currentTab.previewInstances = 'live'
+		# 在特定實體內插中顯示編輯畫面的文本
+		font.currentTab.previewInstances = font.GSInstance[-1]
+		# 所有實體的內插
+		font.currentTab.previewInstances = 'all'
 		"""
 	@previewInstances.setter
 	def previewInstances(self, value: Union[str, GSInstance]):
@@ -5478,12 +5615,15 @@ class GSEditViewController: # 類別
 		"""
 	#endregion
 		
-class GSGlyphInfo: # 類別
+class GSGlyphInfo(): # 類別
 	"""
 	字型資訊物件的實作。
 
 	這包含來自字符資料庫的有價值資訊。有關如何建立這些物件的詳細訊息，請查看`GSGlyphsInfo`
 	"""
+	def __init__(self):
+		self.components = GSGlyphInfo()
+
 	#region 屬性(Properties)
 	@property
 	def name(self) -> 'str':
@@ -5587,7 +5727,7 @@ class GSGlyphInfo: # 類別
 
 		參見`書寫方向`常數
 		```			
-			glyph.direction = GSRTL
+		glyph.direction = GSRTL
 
 		3.0版新增
 		"""
@@ -5598,46 +5738,49 @@ class GSGlyphInfo: # 類別
 		
 	#endregion
 		
-class GSFontInfoValueLocalized: # 類別
+class GSFontInfoValueLocalized(GSFont): # 類別
 	"""
 	本地化字型資訊值的實作。
 
 	有關如何取用它們的詳細訊息，請查看`GSFont.properties`
 	"""
+	def __init__(self):
+		self.values = GSFontInfoValue()
+
 	#region 屬性(Properties)
 	@property
 	def key(self) -> 'str':
 		"""
 		鍵
 		```			
-			# 尋找具有“designers”鍵的 GSFontInfoValueLocalized
-			for fontInfo in font.properties:
-				if fontInfo.key == "designers":
-					print(fontInfo)
+		# 尋找具有“designers”鍵的 GSFontInfoValueLocalized
+		for fontInfo in font.properties:
+			if fontInfo.key == "designers":
+				print(fontInfo)
 		"""
 	@property
 	def values(self) -> List['GSFontInfoValue']:
 		"""
 		一個`GSFontInfoValue`物件列表。
 		```			
-			# 列出 GSFontInfoValueLocalized 的值
-			for fontInfoValue in fontInfoValueLocalized.values:
-				print(fontInfoValue)
+		# 列出 GSFontInfoValueLocalized 的值
+		for fontInfoValue in fontInfoValueLocalized.values:
+			print(fontInfoValue)
 		"""
 	@property
 	def defaultValue(self) -> 'str':
 		"""
 		被視為預設值（dflt 或英文項目）的值
 		```		
-			# 列印給定 GSFontInfoValueLocalized 實體的預設值
-			print(fontInfoValueLocalized.defaultValue)
-			# 下面的列印總是返回 True，因為
-			# font.designer 代表相同的值
-			fontInfoValueLocalized = None
-			for fontInfo in font.properties:
-				if fontInfo.key == "designers":
-					fontInfoValueLocalized = fontInfo
-			print(fontInfoValueLocalized.defaultValue == font.designer)
+		# 列印給定 GSFontInfoValueLocalized 實體的預設值
+		print(fontInfoValueLocalized.defaultValue)
+		# 下面的列印總是返回 True，因為
+		# font.designer 代表相同的值
+		fontInfoValueLocalized = None
+		for fontInfo in font.properties:
+			if fontInfo.key == "designers":
+				fontInfoValueLocalized = fontInfo
+		print(fontInfoValueLocalized.defaultValue == font.designer)
 		"""
 
 	#endregion
@@ -5652,24 +5795,24 @@ class GSFontInfoValueSingle: # 類別
 		"""
 		鍵
 		```			
-			# GSFontInfoValueSingle 被儲存在 font.properties 這類的屬性中
-			# 它與 GSFontInfoValueLocalized 之間的區別之一
-			# 是前者沒有 "values" 屬性
-			for fontProperty in font.properties:
-				if not hasattr(fontProperty, "values"):
-					print(fontProperty.key)
+		# GSFontInfoValueSingle 被儲存在 font.properties 這類的屬性中
+		# 它與 GSFontInfoValueLocalized 之間的區別之一
+		# 是前者沒有 "values" 屬性
+		for fontProperty in font.properties:
+			if not hasattr(fontProperty, "values"):
+				print(fontProperty.key)
 		"""
 	@property
 	def value(self) -> 'str':
 		"""
 		值
 		```			
-			# GSFontInfoValueSingle 被儲存在 font.properties 這類的屬性中
-			# 它與 GSFontInfoValueLocalized 之間的區別之一
-			# 是前者沒有 "values" 屬性
-			for fontProperty in font.properties:
-				if not hasattr(fontProperty, "values"):
-					print(fontProperty.value)
+		# GSFontInfoValueSingle 被儲存在 font.properties 這類的屬性中
+		# 它與 GSFontInfoValueLocalized 之間的區別之一
+		# 是前者沒有 "values" 屬性
+		for fontProperty in font.properties:
+			if not hasattr(fontProperty, "values"):
+				print(fontProperty.value)
 		"""
 	#endregion
 		
@@ -5683,45 +5826,45 @@ class GSFontInfoValue: # 類別
 		"""
 		鍵
 		```			
-			# GSFontInfoValue 被儲存在 font.properties 這類的屬性中
-			for fontProperty in font.properties:
-				# 不是所有的 font.properties 都包含這個屬性
-				# 所以我們將尋找那些有它的
-				if hasattr(fontProperty, "values"):
-					for fontInfoValue in fontProperty.values:
-						# 這行列印出一個鍵屬性
-						# 找到了 GSFontInfoValue 實體
-						print(fontInfoValue.key)
+		# GSFontInfoValue 被儲存在 font.properties 這類的屬性中
+		for fontProperty in font.properties:
+			# 不是所有的 font.properties 都包含這個屬性
+			# 所以我們將尋找那些有它的
+			if hasattr(fontProperty, "values"):
+				for fontInfoValue in fontProperty.values:
+					# 這行列印出一個鍵屬性
+					# 找到了 GSFontInfoValue 實體
+					print(fontInfoValue.key)
 		"""
 	@property
 	def value(self) -> 'str':
 		"""
 		值
 		```			
-			# GSFontInfoValue 被儲存在 font.properties 這類的屬性中
-			for fontProperty in font.properties:
-				# 不是所有的 font.properties 都包含這個屬性
-				# 所以我們將尋找那些有它的
-				if hasattr(fontProperty, "values"):
-					for fontInfoValue in fontProperty.values:
-						# 這行列印出一個值屬性
-						# 找到了 GSFontInfoValue 實體
-						print(fontInfoValue.value)
+		# GSFontInfoValue 被儲存在 font.properties 這類的屬性中
+		for fontProperty in font.properties:
+			# 不是所有的 font.properties 都包含這個屬性
+			# 所以我們將尋找那些有它的
+			if hasattr(fontProperty, "values"):
+				for fontInfoValue in fontProperty.values:
+					# 這行列印出一個值屬性
+					# 找到了 GSFontInfoValue 實體
+					print(fontInfoValue.value)
 		"""
 	@property
 	def languageTag(self) -> 'str':
 		"""
 		語言標籤
 		```			
-			# GSFontInfoValue 被儲存在 font.properties 這類的屬性中
-			for fontProperty in font.properties:
-				# 不是所有的 font.properties 都包含這個屬性
-				# 所以我們將尋找那些有它的
-				if hasattr(fontProperty, "values"):
-					for fontInfoValue in fontProperty.values:
-						# 這行列印出語言標籤屬性
-						# 找到了 GSFontInfoValue 實體
-						print(fontInfoValue.languageTag)
+		# GSFontInfoValue 被儲存在 font.properties 這類的屬性中
+		for fontProperty in font.properties:
+			# 不是所有的 font.properties 都包含這個屬性
+			# 所以我們將尋找那些有它的
+			if hasattr(fontProperty, "values"):
+				for fontInfoValue in fontProperty.values:
+					# 這行列印出語言標籤屬性
+					# 找到了 GSFontInfoValue 實體
+					print(fontInfoValue.languageTag)
 		"""
 	#endregion
 
@@ -5729,6 +5872,9 @@ class GSMetricValue: # 類別
 	"""
 	GSMetricValue 物件代表垂直度量值及其超出的部分。
 	"""
+	def __init__(self):
+		self.filter = NSPredicate()
+		self.metric = GSMetric()
 	#region 屬性(Properties)
 	@property
 	def position(self) -> 'float':
@@ -5772,10 +5918,13 @@ class GSMetricValue: # 類別
 
 	#endregion
 
-class PreviewTextWindow: # 類別
+class PreviewTextWindow(GSApplication): # 類別
 	"""
 	文本預覽視窗
 	"""
+	def __init__(self):
+		self.font = GSFont()
+
 	#region 屬性(Properties)
 	@property
 	def font(self) -> 'GSFont':
@@ -5815,16 +5964,16 @@ class PreviewTextWindow: # 類別
 		"""
 		打開預覽文本視窗
 		```			
-			# 打開文本預覽視窗
-			PreviewTextWindow.open()
-			# 設定在文本預覽視窗中打開實體 "Regular"
-			font = PreviewTextWindow.font
-			instanceNames = [instance.name for instance in font.instances]
-			regularIndex = instanceNames.index("Regular")
-			PreviewTextWindow.instanceIndex = regularIndex
-			# 設定文本和字型大小值
-			PreviewTextWindow.text = 'hamburgefontsiv'
-			PreviewTextWindow.fontSize = 200
+		# 打開文本預覽視窗
+		PreviewTextWindow.open()
+		# 設定在文本預覽視窗中打開實體 "Regular"
+		font = PreviewTextWindow.font
+		instanceNames = [instance.name for instance in font.instances]
+		regularIndex = instanceNames.index("Regular")
+		PreviewTextWindow.instanceIndex = regularIndex
+		# 設定文本和字型大小值
+		PreviewTextWindow.text = 'hamburgefontsiv'
+		PreviewTextWindow.fontSize = 200
 		"""
 	def close(self):
 		"""
@@ -5837,8 +5986,11 @@ class NSAffineTransform: # 類別
 	NSAffineTransform 物件。
 	"""
 	#region 屬性(Properties)
-	# @property
-	# def transformStruct(self)
+	@property
+	def transformStruct(self):
+		"""
+		變形結構
+		"""
 	#endregion
 	#region 函數(Functions)
 	def shift(self) -> 'Union[tuple, NSPoint]':
@@ -6680,3 +6832,15 @@ GSMetricsTypeDescender: Final = int
 GSMetricsTypeBaseline: Final = int
 GSMetricsTypeItalicAngle: Final = int
 #endregion
+
+# 自定義類別
+Glyphs = GSApplication()
+glyph = GSGlyph()
+layer = GSLayer()
+# axis = GSSmartComponentAxis()
+# thisLayer = GSLayer()
+# Glyphs.font = GSFont
+# thisLayer: GSLayer = ...
+# """
+# myLayers = Glyphs.font.selectedLayers # 選取的圖層
+# """
