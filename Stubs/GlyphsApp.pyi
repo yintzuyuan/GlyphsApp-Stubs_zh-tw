@@ -7706,7 +7706,7 @@ GSMetricsTypeItalicAngle: Final = int
 #endregion
 
 # 自定義類別
-Glyphs = GSApplication
+Glyphs = GSApplication()
 glyph = GSGlyph()
 layer = GSLayer()
 # axis = GSSmartComponentAxis()
