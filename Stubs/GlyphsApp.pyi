@@ -1463,7 +1463,7 @@ class GSFont(): # 類別
 		"""
 	#endregion
 		
-class GSAxis(GSFont): # 類別
+class GSAxis(): # 類別
 	"""
 	軸物件的實作。
 	"""
@@ -1516,7 +1516,7 @@ class GSAxis(GSFont): # 類別
 
 	#endregion
 		
-class GSMetric(GSFont): # 類別
+class GSMetric(): # 類別
 	"""
 	度量物件的實作。它用於連接主板中的度量和字幹。
 	"""
@@ -1585,7 +1585,7 @@ class GSMetric(GSFont): # 類別
 	def horizontal(self, value: bool): ...
 	#endregion
 
-class GSFontMaster(GSFont): # 類別
+class GSFontMaster(): # 類別
 	"""
 	主板物件的實作。這對應於字型訊息中的“主板”面板。在 Glyphs.app 中，每個主版的字符不是在這裡取用，而是作為附加到字型物件上的字符圖層。請參考頂部的資訊圖表以便更好地理解。
 	"""
@@ -1907,7 +1907,7 @@ class GSAlignmentZone: # 類別
 
 	#endregion
 
-class GSInstance(GSFont): # 類別
+class GSInstance(): # 類別
 	"""
 	實體物件的實作。這對應於字型資訊中的“匯出”面板。
 	"""
@@ -2773,7 +2773,7 @@ class GSCustomParameter: # 類別
 
 	#endregion
 
-class GSClass(GSFont): # 類別
+class GSClass(): # 類別
 	"""
 	類別物件的實作。用於儲存OpenType類別。
 
@@ -2856,7 +2856,7 @@ class GSClass(GSFont): # 類別
 
 	#endregion
 
-class GSFeaturePrefix(GSFont): # 類別
+class GSFeaturePrefix(): # 類別
 	"""
 	特性前綴物件的實作。用於儲存需要在特性之外的東西，如單獨查找。
 
@@ -2922,7 +2922,7 @@ class GSFeaturePrefix(GSFont): # 類別
 
 	#endregion
 
-class GSFeature(GSFont): # 類別
+class GSFeature(): # 類別
 	"""
 	特性物件的實作。用於在字型資訊中實作OpenType特性。
 
@@ -3044,7 +3044,7 @@ class GSFeature(GSFont): # 類別
 		"""
 	#endregion
 
-class GSGlyph(GSFont): #類別
+class GSGlyph(): #類別
 	"""
 	字符物件的實作。
 
@@ -3699,7 +3699,7 @@ class GSGlyph(GSFont): #類別
 		"""
 	#endregion
 
-class GSLayer(GSGlyph): # 類別
+class GSLayer(): # 類別
 	"""
 	圖層物件的實作。
 
@@ -4535,7 +4535,7 @@ class GSLayer(GSGlyph): # 類別
 		"""
 	#endregion
 		
-class GSAnchor(GSLayer): # 類別
+class GSAnchor(): # 類別
 	"""
 	錨點物件的實作。
 
@@ -4622,7 +4622,7 @@ class GSAnchor(GSLayer): # 類別
 	def userData(self): ...
 	#endregion
 
-class GSComponent(GSLayer): # 類別
+class GSComponent(): # 類別
 	"""
 	組件物件的實作。
 
@@ -4935,7 +4935,7 @@ class GSComponent(GSLayer): # 類別
 		"""
 	#endregion
 
-class GSGlyphReference(GSFont): # 類別
+class GSGlyphReference(): # 類別
 	"""
 	一個小幫手類別用於在userData中儲存對字符的參考，將追踪字符名稱的變化。
 
@@ -4961,7 +4961,7 @@ class GSGlyphReference(GSFont): # 類別
 
 	#endregion
 		
-class GSSmartComponentAxis(GSGlyph): # 類別
+class GSSmartComponentAxis(): # 類別
 	"""
 	智慧組件內插軸物件的實作。
 
@@ -5009,7 +5009,7 @@ class GSSmartComponentAxis(GSGlyph): # 類別
 
 	#endregion
 		
-class GSShape(GSLayer): # 類別
+class GSShape(): # 類別
 	"""
 	形狀物件的實作。
 
@@ -5037,7 +5037,7 @@ class GSShape(GSLayer): # 類別
 		"""
 	#endregion
 		
-class GSPath(GSLayer): # 類別
+class GSPath(): # 類別
 	"""
 	路徑物件的實作。
 
@@ -5223,7 +5223,7 @@ class GSPath(GSLayer): # 類別
 		"""
 	#endregion
 		
-class GSNode(GSPath): # 類別
+class GSNode(): # 類別
 	"""
 	節點物件的實作。
 
@@ -5397,7 +5397,7 @@ class GSNode(GSPath): # 類別
 		"""
 	#endregion
 		
-class GSPathSegment(GSPath): # 類別
+class GSPathSegment(): # 類別
 	"""
 	線段物件的實作。
 
@@ -5480,7 +5480,7 @@ class GSPathSegment(GSPath): # 類別
 		"""
 	#endregion
 
-class GSGuide(GSLayer): # 類別
+class GSGuide(): # 類別
 	"""
 	參考線物件的實作。
 
@@ -5589,7 +5589,7 @@ class GSGuide(GSLayer): # 類別
 
 	#endregion
 
-class GSAnnotation(GSLayer): # 類別
+class GSAnnotation(): # 類別
 	"""
 	註解物件的實作。
 
@@ -5658,7 +5658,7 @@ class GSAnnotation(GSLayer): # 類別
 	def width(self, value: 'float'): ...
 	#endregion
 
-class GSHint(GSLayer): # 類別
+class GSHint(): # 類別
 	"""
 	Hint物件的實作。
 
@@ -5875,7 +5875,7 @@ class GSHint(GSLayer): # 類別
 
 	#endregion
 		
-class GSBackgroundImage(GSLayer): # 類別
+class GSBackgroundImage(): # 類別
 	"""
 	背景圖片的實作。
 
@@ -6032,7 +6032,7 @@ class GSBackgroundImage(GSLayer): # 類別
 		"""
 	#endregion
 
-class GSGradient(GSLayer): # 類別
+class GSGradient(): # 類別
 	"""
 	漸層物件的實作。
 
@@ -6111,7 +6111,7 @@ class GSGradient(GSLayer): # 類別
 
 	#endregion
 
-class GSEditViewController(GSFont): # 類別
+class GSEditViewController(): # 類別
 	"""
 	實作 GSEditViewController 物件，代表 UI 中的編輯分頁。
 
@@ -6577,7 +6577,7 @@ class GSGlyphInfo(): # 類別
 		
 	#endregion
 		
-class GSFontInfoValueLocalized(GSFont): # 類別
+class GSFontInfoValueLocalized(): # 類別
 	"""
 	本地化字型資訊值的實作。
 
@@ -6783,7 +6783,7 @@ class GSMetricValue: # 類別
 
 	#endregion
 
-class PreviewTextWindow(GSApplication): # 類別
+class PreviewTextWindow(): # 類別
 	"""
 	文本預覽視窗
 	"""
@@ -7706,7 +7706,7 @@ GSMetricsTypeItalicAngle: Final = int
 #endregion
 
 # 自定義類別
-Glyphs = GSApplication
+Glyphs = GSApplication()
 glyph = GSGlyph()
 layer = GSLayer()
 # axis = GSSmartComponentAxis()
